@@ -1474,12 +1474,45 @@
         let userLocation = null;
 
         // Get user's location
-        function getUserLocation(callback) {
+        async function getUserLocation(callback) {
             if (!('geolocation' in navigator)) {
                 alert('Geolocation is not supported by your browser');
+                sortSelect.value = 'name';
+                if (callback) callback(false);
                 return;
             }
 
+            // Check permission status first (if Permissions API is available)
+            if ('permissions' in navigator) {
+                try {
+                    const permission = await navigator.permissions.query({ name: 'geolocation' });
+
+                    if (permission.state === 'denied') {
+                        // Permission was previously denied - show instructions
+                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                        const isAndroid = /Android/.test(navigator.userAgent);
+
+                        let instructions = 'To sort by proximity, please enable location access:\n\n';
+                        if (isIOS) {
+                            instructions += '1. Open Settings\n2. Scroll to Safari (or your browser)\n3. Tap Location\n4. Select "Allow"';
+                        } else if (isAndroid) {
+                            instructions += '1. Tap the lock icon in the address bar\n2. Tap "Permissions"\n3. Enable Location';
+                        } else {
+                            instructions += '1. Click the lock icon in the address bar\n2. Find "Location" and set it to "Allow"\n3. Refresh the page';
+                        }
+
+                        alert(instructions);
+                        sortSelect.value = 'name';
+                        if (callback) callback(false);
+                        return;
+                    }
+                } catch (e) {
+                    // Permissions API not fully supported, continue with regular request
+                    console.log('Permissions API error:', e);
+                }
+            }
+
+            // Request location
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     userLocation = {
@@ -1492,12 +1525,16 @@
                 (error) => {
                     console.log('Geolocation error:', error.message);
                     userLocation = null;
+
                     if (error.code === 1) {
-                        alert('Location access denied. Please enable location permissions to sort by proximity.');
+                        // User denied the prompt
+                        alert('Location access is needed to sort by proximity. Please try again and tap "Allow" when prompted.');
+                    } else if (error.code === 2) {
+                        alert('Could not determine your location. Please check your device settings.');
                     } else {
-                        alert('Could not get your location. Please try again.');
+                        alert('Location request timed out. Please try again.');
                     }
-                    // Reset to sort by name if location denied
+
                     sortSelect.value = 'name';
                     if (callback) callback(false);
                 },
