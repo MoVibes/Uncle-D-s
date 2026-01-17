@@ -1,5 +1,5 @@
 // Uncle D's Good Eats - Service Worker
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const STATIC_CACHE = `uncle-ds-static-${CACHE_VERSION}`;
 const TILES_CACHE = `uncle-ds-tiles-${CACHE_VERSION}`;
 

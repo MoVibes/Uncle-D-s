@@ -229,6 +229,7 @@
             overflow-y: auto;
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
             transform: translateY(-8px);
             transition: var(--transition-normal);
             border: 1px solid rgba(61, 90, 61, 0.06);
@@ -237,6 +238,7 @@
         .search-results.active {
             opacity: 1;
             visibility: visible;
+            pointer-events: auto;
             transform: translateY(0);
         }
 
@@ -590,6 +592,8 @@
             margin-bottom: 20px;
             padding-bottom: 16px;
             border-bottom: 2px solid var(--cream-dark);
+            position: relative;
+            z-index: 5;
         }
 
         .list-header h2 {
@@ -825,6 +829,7 @@
         .loading.hidden {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
         }
 
         .loading-content {
