@@ -604,7 +604,7 @@
             document.getElementById('loginError').textContent = 'Failed to load authentication library. Please refresh.';
         }
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('[Init] Supabase client created');
 
         // DOM elements
@@ -621,7 +621,7 @@
 
         // Check if already logged in
         async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await sb.auth.getSession();
             if (session) {
                 showDashboard();
             }
@@ -640,7 +640,7 @@
             console.log('[Auth] Attempting login for:', email);
 
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await sb.auth.signInWithPassword({
                     email,
                     password
                 });
@@ -666,9 +666,9 @@
 
         // Logout
         async function logout() {
-            await supabase.auth.signOut();
+            await sb.auth.signOut();
             if (realtimeChannel) {
-                supabase.removeChannel(realtimeChannel);
+                sb.removeChannel(realtimeChannel);
             }
             dashboard.classList.remove('active');
             loginScreen.style.display = 'flex';
@@ -702,27 +702,27 @@
             const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
             // Today's views
-            const { count: todayCount } = await supabase
+            const { count: todayCount } = await sb
                 .from('events')
                 .select('*', { count: 'exact', head: true })
                 .eq('event_type', 'page_view')
                 .gte('created_at', todayStart);
 
             // This week's views
-            const { count: weekCount } = await supabase
+            const { count: weekCount } = await sb
                 .from('events')
                 .select('*', { count: 'exact', head: true })
                 .eq('event_type', 'page_view')
                 .gte('created_at', weekStart);
 
             // Total views
-            const { count: totalCount } = await supabase
+            const { count: totalCount } = await sb
                 .from('events')
                 .select('*', { count: 'exact', head: true })
                 .eq('event_type', 'page_view');
 
             // Unique sessions
-            const { data: sessions } = await supabase
+            const { data: sessions } = await sb
                 .from('events')
                 .select('session_id')
                 .eq('event_type', 'page_view');
@@ -737,7 +737,7 @@
 
         // Load popular restaurants
         async function loadPopularRestaurants() {
-            const { data, error } = await supabase
+            const { data, error } = await sb
                 .from('events')
                 .select('event_value')
                 .in('event_type', ['restaurant_click', 'directions_click', 'view_on_map_click'])
@@ -792,7 +792,7 @@
 
         // Load top searches
         async function loadTopSearches() {
-            const { data, error } = await supabase
+            const { data, error } = await sb
                 .from('events')
                 .select('event_value, event_type')
                 .in('event_type', ['search', 'search_no_results'])
@@ -856,7 +856,7 @@
             const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
             // Get friction events
-            const { data, error } = await supabase
+            const { data, error } = await sb
                 .from('events')
                 .select('event_type, event_value')
                 .in('event_type', ['rage_click', 'dropdown_frustration', 'quick_bounce', 'js_error'])
@@ -924,7 +924,7 @@
 
         // Load recent events for feed
         async function loadRecentEvents() {
-            const { data, error } = await supabase
+            const { data, error } = await sb
                 .from('events')
                 .select('*')
                 .order('created_at', { ascending: false })
@@ -940,7 +940,7 @@
         function setupRealtime() {
             document.getElementById('liveStatus').textContent = 'Connecting...';
 
-            realtimeChannel = supabase
+            realtimeChannel = sb
                 .channel('events-channel')
                 .on('postgres_changes', {
                     event: 'INSERT',
