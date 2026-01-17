@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Uncle D's Good Eats</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --olive-gold: #A89968;
+            --olive-gold-dark: #8B7D4F;
+            --forest-green: #3D5A3D;
+            --forest-green-light: #4A6B4A;
+            --lime-accent: #8B9A3B;
+            --cream: #FAF9F6;
+            --cream-dark: #F0EDE5;
+            --charcoal: #2D2D2D;
+            --shadow: rgba(61, 90, 61, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--cream);
+            color: var(--charcoal);
+        }
+
+        /* Header */
+        header {
+            background: var(--olive-gold);
+            padding: 1rem 1.5rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo h1 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.5rem;
+            color: var(--forest-green);
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            color: var(--cream);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Search */
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--charcoal);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--forest-green);
+        }
+
+        .restaurant-count {
+            background: var(--forest-green);
+            color: var(--cream);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Map Container */
+        #map {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        /* Custom Popup Styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            min-width: 260px;
+        }
+
+        .leaflet-popup-tip {
+            background: var(--cream);
+        }
+
+        .popup-content {
+            background: var(--cream);
+        }
+
+        .popup-header {
+            background: var(--forest-green);
+            padding: 1rem 1.25rem;
+        }
+
+        .popup-header h3 {
+            color: var(--cream);
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .popup-body {
+            padding: 1rem 1.25rem;
+        }
+
+        .popup-address {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .popup-address svg {
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: var(--lime-accent);
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .popup-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .popup-btn-primary {
+            background: var(--olive-gold);
+            color: var(--forest-green);
+        }
+
+        .popup-btn-primary:hover {
+            background: var(--olive-gold-dark);
+            transform: translateY(-1px);
+        }
+
+        .popup-btn-secondary {
+            background: var(--cream-dark);
+            color: var(--charcoal);
+        }
+
+        .popup-btn-secondary:hover {
+            background: #E5E2DA;
+            transform: translateY(-1px);
+        }
+
+        /* Custom Marker */
+        .custom-marker {
+            background: var(--forest-green);
+            border: 3px solid var(--cream);
+            border-radius: 50% 50% 50% 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-45deg);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+
+        .custom-marker:hover {
+            transform: rotate(-45deg) scale(1.1);
+        }
+
+        .custom-marker svg {
+            transform: rotate(45deg);
+            width: 14px;
+            height: 14px;
+            color: var(--cream);
+        }
+
+        /* Marker Cluster Styling */
+        .marker-cluster {
+            background: var(--olive-gold);
+            border: 3px solid var(--cream);
+            border-radius: 50%;
+            color: var(--forest-green);
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Search Results Dropdown */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            margin-top: 0.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1001;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s ease;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: var(--cream-dark);
+        }
+
+        .search-result-item h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--forest-green);
+            margin-bottom: 0.2rem;
+        }
+
+        .search-result-item p {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .no-results {
+            padding: 1rem;
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 0.75rem 1rem;
+            }
+
+            .header-content {
+                flex-wrap: wrap;
+            }
+
+            .logo h1 {
+                font-size: 1.2rem;
+            }
+
+            .logo span {
+                display: none;
+            }
+
+            .search-container {
+                order: 3;
+                max-width: 100%;
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+
+            .restaurant-count {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            #map {
+                top: 110px;
+            }
+
+            .leaflet-popup-content {
+                min-width: 240px;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--cream);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--cream-dark);
+            border-top-color: var(--forest-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading h2 {
+            font-family: 'Archivo Black', sans-serif;
+            color: var(--forest-green);
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Leaflet Control Styling */
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 2px 10px var(--shadow) !important;
+        }
+
+        .leaflet-control-zoom a {
+            background: var(--cream) !important;
+            color: var(--forest-green) !important;
+            border: none !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 18px !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: var(--cream-dark) !important;
+        }
+
+        .leaflet-control-zoom-in {
+            border-radius: 8px 8px 0 0 !important;
+        }
+
+        .leaflet-control-zoom-out {
+            border-radius: 0 0 8px 8px !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <h2>Uncle D's Good Eats</h2>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <h1>Uncle D's</h1>
+                <span>Good Eats</span>
+            </div>
+
+            <div class="search-container">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search restaurants...">
+                <div class="search-results" id="searchResults"></div>
+            </div>
+
+            <div class="restaurant-count" id="restaurantCount">
+                81 spots
+            </div>
+        </div>
+    </header>
+
+    <!-- Map -->
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Restaurant Data
+        const restaurants = [
+  {
+    "name": "A Toda Madre",
+    "address": "8200 Preston Hwy, Louisville, KY 40219",
+    "lat": 38.1332639,
+    "lng": -85.6846969
+  },
+  {
+    "name": "Abyssinia Ethiopian",
+    "address": "554 S 5th St, Louisville, KY 40202",
+    "lat": 38.2495279,
+    "lng": -85.7596494
+  },
+  {
+    "name": "African Best Restaurant",
+    "address": "7325 St Andrews Church Rd, Louisville, KY 40214",
+    "lat": 38.1539235,
+    "lng": -85.802952
+  },
+  {
+    "name": "Alwatan Bakery",
+    "address": "3711 Klondike Ln, Louisville, KY 40218",
+    "lat": 38.2106445,
+    "lng": -85.6396965
+  },
+  {
+    "name": "B&N Food Market",
+    "address": "5945 Elmburg Rd, Bagdad, KY 40003",
+    "lat": 38.2618986,
+    "lng": -85.0581353
+  },
+  {
+    "name": "Banaadir Cafe and Grill",
+    "address": "5600 S 3rd St, Louisville, KY 40214",
+    "lat": 38.1691433,
+    "lng": -85.768872
+  },
+  {
+    "name": "Bellissimo",
+    "address": "2217 Steier Ln, Louisville, KY 40218",
+    "lat": 38.1979461,
+    "lng": -85.6569047
+  },
+  {
+    "name": "Big Hopp's Southern Eatery",
+    "address": "2913 Dixie Hwy, Louisville, KY 40216",
+    "lat": 38.166334,
+    "lng": -85.8297254
+  },
+  {
+    "name": "Big Momma's Soul Food Kitchen",
+    "address": "1812 W Muhammad Ali Blvd, Louisville, KY 40203",
+    "lat": 38.2536055,
+    "lng": -85.7814802
+  },
+  {
+    "name": "Dalat's Banh Mi and Boba",
+    "address": "6915 Southside Dr, Louisville, KY 40214",
+    "lat": 38.1567326,
+    "lng": -85.7636532
+  },
+  {
+    "name": "District 6 Vietnamese Gastropub",
+    "address": "3930 Shelbyville Rd, Louisville, KY 40207",
+    "lat": 38.2526332,
+    "lng": -85.6539333
+  },
+  {
+    "name": "Dixie Chicken (Dixie Hwy)",
+    "address": "3947 Dixie Hwy, Louisville, KY 40216",
+    "lat": 38.166334,
+    "lng": -85.8297254
+  },
+  {
+    "name": "Dixie Chicken (W Oak St)",
+    "address": "1785 W Oak St, Louisville, KY 40210",
+    "lat": 38.2375459,
+    "lng": -85.7863856
+  },
+  {
+    "name": "Eat at The Spot",
+    "address": "865 S Dixie Blvd, Radcliff, KY 40160",
+    "lat": 37.8297114,
+    "lng": -85.9302105
+  },
+  {
+    "name": "El Taco Ranchero",
+    "address": "5015 Poplar Level Rd, Louisville, KY 40219",
+    "lat": 38.1659309,
+    "lng": -85.6802271
+  },
+  {
+    "name": "Emilio's Taqueria",
+    "address": "9218 Blue Lick Rd, Louisville, KY 40229",
+    "lat": 38.114471,
+    "lng": -85.6908421
+  },
+  {
+    "name": "FABD Smokehouse",
+    "address": "3204 Frankfort Ave, Louisville, KY 40206",
+    "lat": 38.2540842,
+    "lng": -85.6749436
+  },
+  {
+    "name": "Family Ties Restaurant",
+    "address": "1030 Cecil Ave, Louisville, KY 40211",
+    "lat": 38.244452,
+    "lng": -85.8214666
+  },
+  {
+    "name": "Fort Royal Caribbean Restaurant",
+    "address": "6918 Southside Dr, Louisville, KY 40214",
+    "lat": 38.1566672,
+    "lng": -85.764972
+  },
+  {
+    "name": "Franco's Restaurant & Catering",
+    "address": "3300 Dixie Hwy, Louisville, KY 40216",
+    "lat": 38.166334,
+    "lng": -85.8297254
+  },
+  {
+    "name": "Gorilla Bob's Grub Shack",
+    "address": "8503 Terry Rd, Louisville, KY 40258",
+    "lat": 38.1510989,
+    "lng": -85.869621
+  },
+  {
+    "name": "Hilltop Chicken",
+    "address": "1209 W Hill St, Louisville, KY 40210",
+    "lat": 38.2276743,
+    "lng": -85.7755964
+  },
+  {
+    "name": "Hokkaido Ramen & Sushi (New Cut Rd)",
+    "address": "5207 New Cut Rd, Louisville, KY 40214",
+    "lat": 38.1609904,
+    "lng": -85.7784793
+  },
+  {
+    "name": "Hokkaido Ramen & Sushi (W Kenwood Dr)",
+    "address": "818 W Kenwood Dr, Louisville, KY 40214",
+    "lat": 38.1625629,
+    "lng": -85.7887015
+  },
+  {
+    "name": "Imanka 2 Somali Restaurant (S 3rd St)",
+    "address": "5318 S 3rd St, Louisville, KY 40214",
+    "lat": 38.17326,
+    "lng": -85.7698689
+  },
+  {
+    "name": "Imanka Somali Restaurant (S 8th St)",
+    "address": "737 S 8th St, Louisville, KY 40203",
+    "lat": 38.2453965,
+    "lng": -85.766124
+  },
+  {
+    "name": "JJ Grill Mediterranean",
+    "address": "3741 Pamela Rae Dr, Louisville, KY 40241",
+    "lat": 38.3013424,
+    "lng": -85.5816604
+  },
+  {
+    "name": "Jin Doshirak",
+    "address": "211 S 5th St, Louisville, KY 40202",
+    "lat": 38.2534032,
+    "lng": -85.7582596
+  },
+  {
+    "name": "John O'Bryan's Tavern",
+    "address": "4123 Flintlock Dr, Louisville, KY 40216",
+    "lat": 38.1686679,
+    "lng": -85.8381389
+  },
+  {
+    "name": "Ken Tex BBQ",
+    "address": "1163 Mt Eden Rd, Shelbyville, KY 40065",
+    "lat": 38.1779682,
+    "lng": -85.1916595
+  },
+  {
+    "name": "Kiwami Ramen Bar",
+    "address": "1700 Bardstown Rd, Louisville, KY 40205",
+    "lat": 38.2291058,
+    "lng": -85.7178379
+  },
+  {
+    "name": "Koko & Rae Caribbean Kitchen",
+    "address": "1511 Bardstown Rd, Louisville, KY 40205",
+    "lat": 38.2349295,
+    "lng": -85.7209656
+  },
+  {
+    "name": "Kwetu African Cuisine",
+    "address": "1725 Berry Blvd, Louisville, KY 40215",
+    "lat": 38.2049691,
+    "lng": -85.7777939
+  },
+  {
+    "name": "La Cabanita Mexican Grill",
+    "address": "4900 Poplar Level Rd, Louisville, KY 40219",
+    "lat": 38.1681168,
+    "lng": -85.681232
+  },
+  {
+    "name": "La Catrina Mexican Kitchen (New Albany)",
+    "address": "202 E Elm St, New Albany, IN 47150",
+    "lat": 38.2879181,
+    "lng": -85.8193259
+  },
+  {
+    "name": "La Catrina Tacos & Tequila (Jeffersonville)",
+    "address": "125 W Chestnut St, Jeffersonville, IN 47130",
+    "lat": 38.2881073,
+    "lng": -85.7383306
+  },
+  {
+    "name": "La Guanaquita (E Broadway)",
+    "address": "600 E Broadway, Louisville, KY 40202",
+    "lat": 38.2462633,
+    "lng": -85.7476621
+  },
+  {
+    "name": "La Guanaquita (Taylor Blvd)",
+    "address": "4231 Taylor Blvd, Louisville, KY 40215",
+    "lat": 38.18536,
+    "lng": -85.7794282
+  },
+  {
+    "name": "La Palma Cuban Restaurant",
+    "address": "5614 Preston Hwy, Louisville, KY 40213",
+    "lat": 38.1766313,
+    "lng": -85.6982188
+  },
+  {
+    "name": "Lebrang Food Mart",
+    "address": "175 Market St, Charlestown, IN 47111",
+    "lat": 38.4527618,
+    "lng": -85.6710877
+  },
+  {
+    "name": "Lindsay's Kitchen",
+    "address": "5300 Cane Run Rd, Louisville, KY 40258",
+    "lat": 38.1482096,
+    "lng": -85.8531424
+  },
+  {
+    "name": "Los Hermanos Catrachos",
+    "address": "4106 Taylor Blvd, Louisville, KY 40215",
+    "lat": 38.1876979,
+    "lng": -85.7789932
+  },
+  {
+    "name": "Louisville Smokers BBQ",
+    "address": "1500 W Oak St, Louisville, KY 40210",
+    "lat": 38.2378403,
+    "lng": -85.7824169
+  },
+  {
+    "name": "Mack Bros BBQ",
+    "address": "2700 1/2 Rockford Ln, Louisville, KY 40216",
+    "lat": 38.1867269,
+    "lng": -85.8237426
+  },
+  {
+    "name": "Mammy's Kitchen & Bar",
+    "address": "116 W Stephen Foster Ave, Bardstown, KY 40004",
+    "lat": 37.8101582,
+    "lng": -85.4678188
+  },
+  {
+    "name": "Mike Linnig's Restaurant",
+    "address": "9308 Cane Run Rd, Louisville, KY 40258",
+    "lat": 38.0936166,
+    "lng": -85.8831685
+  },
+  {
+    "name": "Mirage Mediterranean (Preston Hwy)",
+    "address": "4100 Preston Hwy, Louisville, KY 40213",
+    "lat": 38.1979553,
+    "lng": -85.7142188
+  },
+  {
+    "name": "Mirage Mediterranean Express (Dutchmans Ln)",
+    "address": "4000 Dutchmans Ln, Louisville, KY 40207",
+    "lat": 38.2508903,
+    "lng": -85.6480065
+  },
+  {
+    "name": "Restaurant Guatelinda (Poplar Level Rd)",
+    "address": "5049 Poplar Level Rd, Louisville, KY 40219",
+    "lat": 38.1654568,
+    "lng": -85.6795832
+  },
+  {
+    "name": "Shawarma Guys",
+    "address": "5401 Indian Oaks Cir, Louisville, KY 40219",
+    "lat": 38.1579399,
+    "lng": -85.6667867
+  },
+  {
+    "name": "Sichuan House",
+    "address": "7309 Preston Hwy, Louisville, KY 40219",
+    "lat": 38.1465679,
+    "lng": -85.6873127
+  },
+  {
+    "name": "Soulful Choices",
+    "address": "4532 W Broadway, Louisville, KY 40211",
+    "lat": 38.2272989,
+    "lng": -85.8159929
+  },
+  {
+    "name": "Stevie J's Barbecue",
+    "address": "1831 W Jefferson St, Louisville, KY 40203",
+    "lat": 38.2475858,
+    "lng": -85.7814082
+  },
+  {
+    "name": "Taco Choza",
+    "address": "3922 Westport Rd, Louisville, KY 40207",
+    "lat": 38.2596055,
+    "lng": -85.6523247
+  },
+  {
+    "name": "Tacolandia",
+    "address": "5400 Preston Hwy, Louisville, KY 40213",
+    "lat": 38.1789163,
+    "lng": -85.6994476
+  },
+  {
+    "name": "Tacos El Tio Martin",
+    "address": "5101 S 3rd St, Louisville, KY 40214",
+    "lat": 38.1762609,
+    "lng": -85.7705283
+  },
+  {
+    "name": "Tacos Guerra",
+    "address": "8601 National Turnpike, Louisville, KY 40118",
+    "lat": 38.1119234,
+    "lng": -85.7841598
+  },
+  {
+    "name": "Tacos Juanito",
+    "address": "5601 Preston Hwy, Louisville, KY 40219",
+    "lat": 38.1766313,
+    "lng": -85.6982188
+  },
+  {
+    "name": "Taqueria El Mexicano",
+    "address": "7611 Preston Hwy, Louisville, KY 40219",
+    "lat": 38.1414659,
+    "lng": -85.6864258
+  },
+  {
+    "name": "Taqueria Los Gorditos",
+    "address": "2017 Brownsboro Rd, Louisville, KY 40206",
+    "lat": 38.2631892,
+    "lng": -85.7137091
+  },
+  {
+    "name": "Taquero Mucho",
+    "address": "5700 Outer Loop, Louisville, KY 40219",
+    "lat": 38.1306098,
+    "lng": -85.6985093
+  },
+  {
+    "name": "The House of Marigold",
+    "address": "10310 Shelbyville Rd, Louisville, KY 40223",
+    "lat": 38.2576556,
+    "lng": -85.5445291
+  },
+  {
+    "name": "Tikka Tacos",
+    "address": "3311 Preston Hwy, Louisville, KY 40213",
+    "lat": 38.2069459,
+    "lng": -85.7200063
+  },
+  {
+    "name": "Tim Page's Corner Store",
+    "address": "2922 Taylor Blvd, Louisville, KY 40208",
+    "lat": 38.2054166,
+    "lng": -85.7683538
+  },
+  {
+    "name": "Veronica's Mexican (Poplar Level Rd)",
+    "address": "5044 Poplar Level Rd, Louisville, KY 40219",
+    "lat": 38.165547,
+    "lng": -85.679705
+  },
+  {
+    "name": "Veronica's Mexican (Preston Hwy)",
+    "address": "11470 Preston Hwy, Louisville, KY 40229",
+    "lat": 38.0722831,
+    "lng": -85.6693298
+  },
+  {
+    "name": "Wagner's Village Inn",
+    "address": "22171 Main St, Oldenburg, IN 47036",
+    "lat": 39.3440508,
+    "lng": -85.207688
+  },
+  {
+    "name": "Zamzam Restaurant",
+    "address": "1808 Berry Blvd, Louisville, KY 40215",
+    "lat": 38.2037813,
+    "lng": -85.7766688
+  },
+  {
+    "name": "Taqueria El Titi",
+    "address": "8219 Minor Ln, Louisville, KY 40219",
+    "lat": 38.1263,
+    "lng": -85.7083
+  },
+  {
+    "name": "Al-Sham Market",
+    "address": "3819 Bardstown Rd, Ste B, Louisville, KY 40218",
+    "lat": 38.1965,
+    "lng": -85.6544
+  },
+  {
+    "name": "Kathmandu Kitchen & Bar",
+    "address": "3825 Bardstown Rd, Ste 108, Louisville, KY 40218",
+    "lat": 38.196,
+    "lng": -85.6537
+  },
+  {
+    "name": "Mashallah African Restaurant",
+    "address": "4109 Bardstown Rd, Ste 104, Louisville, KY 40218",
+    "lat": 38.1924,
+    "lng": -85.6463
+  },
+  {
+    "name": "Shalimar Restaurant",
+    "address": "1850 S Hurstbourne Pkwy, Ste 125, Louisville, KY 40220",
+    "lat": 38.2217,
+    "lng": -85.5836
+  },
+  {
+    "name": "Sissy's Tacos",
+    "address": "580 N Bardstown Rd, Ste 3, Mount Washington, KY 40047",
+    "lat": 38.0521,
+    "lng": -85.5472
+  },
+  {
+    "name": "Sweet Havana",
+    "address": "5510 Fern Valley Rd, Ste 101, Louisville, KY 40228",
+    "lat": 38.1552,
+    "lng": -85.658
+  },
+  {
+    "name": "The Charcoal Restaurant",
+    "address": "2805 N Hurstbourne Pkwy, Ste 100, Louisville, KY 40223",
+    "lat": 38.2861,
+    "lng": -85.5701
+  },
+  {
+    "name": "Tomo Japanese Ramen & Sushi",
+    "address": "5023 Mud Ln, Ste 160, Louisville, KY 40229",
+    "lat": 38.0919,
+    "lng": -85.6718
+  },
+  {
+    "name": "Carriss' Grocery",
+    "address": "7 Southville Pike, Shelbyville, KY 40065",
+    "lat": 38.11,
+    "lng": -85.1832
+  },
+  {
+    "name": "Bodega Mi Sueño",
+    "address": "3646 Mall Rd, Louisville, KY 40218",
+    "lat": 38.2106,
+    "lng": -85.651
+  },
+  {
+    "name": "Guatelinda Taqueria #3 (Citadel Way)",
+    "address": "8603 Citadel Way, Louisville, KY 40220",
+    "lat": 38.2165,
+    "lng": -85.556
+  },
+  {
+    "name": "Otter Creek Tavern",
+    "address": "6860 Flaherty Rd, Vine Grove, KY 40175",
+    "lat": 37.8107,
+    "lng": -85.9817
+  }
+];
+
+        // Initialize map
+        const map = L.map('map', {
+            zoomControl: true,
+            scrollWheelZoom: true
+        }).setView([38.2, -85.72], 11);
+
+        // Add tile layer with a clean, modern style
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Custom marker icon
+        const createMarkerIcon = () => {
+            return L.divIcon({
+                className: 'custom-marker-wrapper',
+                html: `<div class="custom-marker">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                </div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            });
+        };
+
+        // Create popup content
+        const createPopupContent = (restaurant) => {
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ', ' + restaurant.address)}`;
+            const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(restaurant.address)}`;
+
+            return `
+                <div class="popup-content">
+                    <div class="popup-header">
+                        <h3>${restaurant.name}</h3>
+                    </div>
+                    <div class="popup-body">
+                        <div class="popup-address">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            <span>${restaurant.address}</span>
+                        </div>
+                        <div class="popup-actions">
+                            <a href="${googleMapsUrl}" target="_blank" class="popup-btn popup-btn-primary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                                View
+                            </a>
+                            <a href="${directionsUrl}" target="_blank" class="popup-btn popup-btn-secondary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                                </svg>
+                                Directions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // Store markers for search functionality
+        const markers = [];
+
+        // Add markers to map
+        restaurants.forEach(restaurant => {
+            const marker = L.marker([restaurant.lat, restaurant.lng], {
+                icon: createMarkerIcon()
+            })
+            .bindPopup(createPopupContent(restaurant), {
+                closeButton: true,
+                maxWidth: 300
+            })
+            .addTo(map);
+
+            markers.push({
+                marker,
+                restaurant
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const restaurantCount = document.getElementById('restaurantCount');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+
+            if (query.length === 0) {
+                searchResults.classList.remove('active');
+                restaurantCount.textContent = `${restaurants.length} spots`;
+                return;
+            }
+
+            const filtered = restaurants.filter(r =>
+                r.name.toLowerCase().includes(query) ||
+                r.address.toLowerCase().includes(query)
+            );
+
+            restaurantCount.textContent = `${filtered.length} spots`;
+
+            if (filtered.length === 0) {
+                searchResults.innerHTML = '<div class="no-results">No restaurants found</div>';
+            } else {
+                searchResults.innerHTML = filtered.slice(0, 8).map(r => `
+                    <div class="search-result-item" data-lat="${r.lat}" data-lng="${r.lng}" data-name="${r.name}">
+                        <h4>${r.name}</h4>
+                        <p>${r.address}</p>
+                    </div>
+                `).join('');
+            }
+
+            searchResults.classList.add('active');
+        });
+
+        // Handle search result clicks
+        searchResults.addEventListener('click', (e) => {
+            const item = e.target.closest('.search-result-item');
+            if (item) {
+                const lat = parseFloat(item.dataset.lat);
+                const lng = parseFloat(item.dataset.lng);
+                const name = item.dataset.name;
+
+                map.setView([lat, lng], 16);
+
+                // Find and open the marker popup
+                const markerData = markers.find(m => m.restaurant.name === name);
+                if (markerData) {
+                    markerData.marker.openPopup();
+                }
+
+                searchResults.classList.remove('active');
+                searchInput.value = name;
+            }
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                searchResults.classList.remove('active');
+            }
+        });
+
+        // Hide loading screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+            }, 500);
+        });
+
+        // Fit map to show all markers
+        const bounds = L.latLngBounds(restaurants.map(r => [r.lat, r.lng]));
+        map.fitBounds(bounds, { padding: [50, 50] });
+    </script>
+</body>
+</html>
