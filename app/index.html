@@ -353,6 +353,11 @@
             font-weight: 700;
         }
 
+        .count-badge .star {
+            color: var(--olive-gold);
+            margin-right: 2px;
+        }
+
         /* ========== FULL-BLEED MAP ========== */
         #map {
             position: fixed;
@@ -446,7 +451,7 @@
         }
 
         .popup-header {
-            background: var(--forest-green);
+            background: linear-gradient(135deg, var(--forest-green) 0%, #4A6B4A 100%);
             padding: 16px 20px;
             padding-right: 40px;
         }
@@ -592,7 +597,7 @@
             justify-content: space-between;
             margin-bottom: 20px;
             padding-bottom: 16px;
-            border-bottom: 2px solid var(--cream-dark);
+            border-bottom: 2px dashed var(--olive-gold-light);
             position: relative;
             z-index: 5;
         }
@@ -602,6 +607,13 @@
             color: var(--forest-green);
             font-size: 1.4rem;
             letter-spacing: -0.5px;
+        }
+
+        .list-header h2 span {
+            text-decoration: underline;
+            text-decoration-color: var(--olive-gold);
+            text-decoration-thickness: 3px;
+            text-underline-offset: 4px;
         }
 
         .sort-select {
@@ -636,7 +648,7 @@
         }
 
         .restaurant-card {
-            background: white;
+            background: #FFFEFA;
             border-radius: var(--radius-lg);
             padding: 20px;
             box-shadow: var(--shadow-sm);
@@ -711,11 +723,12 @@
         .card-time {
             font-size: 0.7rem;
             font-weight: 600;
-            color: var(--olive-gold-dark);
-            background: rgba(168, 153, 104, 0.15);
+            color: #8B6914;
+            background: linear-gradient(135deg, rgba(168, 153, 104, 0.18) 0%, rgba(139, 105, 20, 0.12) 100%);
             padding: 3px 8px;
             border-radius: var(--radius-full);
             white-space: nowrap;
+            border: 1px solid rgba(168, 153, 104, 0.2);
         }
 
         .card-description {
@@ -1061,7 +1074,7 @@
                 </svg>
                 <span>List</span>
             </button>
-            <div class="count-badge" id="restaurantCount" aria-live="polite"><span>81</span> spots</div>
+            <div class="count-badge" id="restaurantCount" aria-live="polite"><span class="star">★</span> <span>81</span> spots</div>
         </div>
     </header>
 
@@ -1069,7 +1082,7 @@
     <div id="listView">
         <div class="list-container">
             <div class="list-header">
-                <h2>All Restaurants</h2>
+                <h2>All <span>Restaurants</span></h2>
                 <select class="sort-select" id="sortSelect">
                     <option value="name">Sort by Name</option>
                     <option value="proximity">Sort by Proximity</option>
@@ -1600,7 +1613,7 @@
 
         // Update count badge
         function updateCount(count) {
-            restaurantCount.innerHTML = `<span>${count}</span> spots`;
+            restaurantCount.innerHTML = `<span class="star">★</span> <span>${count}</span> spots`;
         }
 
         // View toggle
