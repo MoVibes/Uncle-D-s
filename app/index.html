@@ -1474,27 +1474,35 @@
         let userLocation = null;
 
         // Get user's location
-        function getUserLocation() {
-            if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        console.log('User location:', userLocation);
-                        // Re-render list if in list view and sorted by proximity
-                        if (currentView === 'list' && sortSelect.value === 'proximity') {
-                            renderList();
-                        }
-                    },
-                    (error) => {
-                        console.log('Geolocation error:', error.message);
-                        userLocation = null;
-                    },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
+        function getUserLocation(callback) {
+            if (!('geolocation' in navigator)) {
+                alert('Geolocation is not supported by your browser');
+                return;
             }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    console.log('User location:', userLocation);
+                    if (callback) callback(true);
+                },
+                (error) => {
+                    console.log('Geolocation error:', error.message);
+                    userLocation = null;
+                    if (error.code === 1) {
+                        alert('Location access denied. Please enable location permissions to sort by proximity.');
+                    } else {
+                        alert('Could not get your location. Please try again.');
+                    }
+                    // Reset to sort by name if location denied
+                    sortSelect.value = 'name';
+                    if (callback) callback(false);
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
         }
 
         // Calculate distance between two points using Haversine formula (returns miles)
@@ -1549,9 +1557,6 @@
             }
             return null;
         }
-
-        // Initialize geolocation
-        getUserLocation();
 
         // Highlight matching text
         function highlightText(text, query) {
@@ -1803,7 +1808,18 @@
             }
         });
 
-        sortSelect.addEventListener('change', renderList);
+        sortSelect.addEventListener('change', () => {
+            if (sortSelect.value === 'proximity' && !userLocation) {
+                // Request location when user selects proximity sort
+                getUserLocation((success) => {
+                    if (success) {
+                        renderList();
+                    }
+                });
+            } else {
+                renderList();
+            }
+        });
 
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
