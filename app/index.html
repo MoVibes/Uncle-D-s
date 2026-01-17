@@ -1373,7 +1373,7 @@
                             <span>${props.address}</span>
                         </div>
                         <div class="popup-actions">
-                            <a href="${googleUrl}" target="_blank" class="popup-btn popup-btn-primary">
+                            <a href="${googleUrl}" target="_blank" class="popup-btn popup-btn-primary" onclick="if(window.UncleAnalytics) UncleAnalytics.trackViewOnMapClick('${props.name.replace(/'/g, "\\'")}');">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                                     <polyline points="15 3 21 3 21 9"/>
@@ -1381,7 +1381,7 @@
                                 </svg>
                                 View
                             </a>
-                            <a href="${directionsUrl}" target="_blank" class="popup-btn popup-btn-secondary">
+                            <a href="${directionsUrl}" target="_blank" class="popup-btn popup-btn-secondary" onclick="if(window.UncleAnalytics) UncleAnalytics.trackDirectionsClick('${props.name.replace(/'/g, "\\'")}');">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polygon points="3 11 22 2 13 21 11 13 3 11"/>
                                 </svg>
@@ -1460,6 +1460,9 @@
                 const props = e.features[0].properties;
                 const coords = e.features[0].geometry.coordinates.slice();
 
+                // Track restaurant click
+                if (window.UncleAnalytics) UncleAnalytics.trackRestaurantClick(props.name);
+
                 if (currentPopup) currentPopup.remove();
 
                 currentPopup = new mapboxgl.Popup({ offset: 15, maxWidth: '320px' })
@@ -1523,11 +1526,17 @@
                         lng: position.coords.longitude
                     };
                     console.log('User location:', userLocation);
+                    // Track successful location request
+                    if (window.UncleAnalytics) UncleAnalytics.trackLocationRequest('granted');
                     if (callback) callback(true);
                 },
                 (error) => {
                     console.log('Geolocation error:', error.code, error.message);
                     userLocation = null;
+
+                    // Track location request failure
+                    const errorType = error.code === 1 ? 'denied' : error.code === 2 ? 'unavailable' : 'timeout';
+                    if (window.UncleAnalytics) UncleAnalytics.trackLocationRequest(errorType);
 
                     let message = '';
                     if (error.code === 1) {
@@ -1644,8 +1653,14 @@
             }
         }
 
-        mapViewBtn.addEventListener('click', () => setView('map'));
-        listViewBtn.addEventListener('click', () => setView('list'));
+        mapViewBtn.addEventListener('click', () => {
+            setView('map');
+            if (window.UncleAnalytics) UncleAnalytics.trackViewSwitch('map');
+        });
+        listViewBtn.addEventListener('click', () => {
+            setView('list');
+            if (window.UncleAnalytics) UncleAnalytics.trackViewSwitch('list');
+        });
 
         // Create card HTML
         function createCardHTML(r) {
@@ -1669,12 +1684,12 @@
                         </p>
                     </div>
                     <div class="card-actions">
-                        <button class="card-btn card-btn-primary" title="Show on map" onclick="event.stopPropagation(); flyTo('${r.name.replace(/'/g, "\\'")}', ${r.lat}, ${r.lng})">
+                        <button class="card-btn card-btn-primary" title="Show on map" onclick="event.stopPropagation(); flyTo('${r.name.replace(/'/g, "\\'")}', ${r.lat}, ${r.lng}); if(window.UncleAnalytics) UncleAnalytics.trackRestaurantClick('${r.name.replace(/'/g, "\\'")}');">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
                             </svg>
                         </button>
-                        <a href="${dirUrl}" target="_blank" class="card-btn card-btn-secondary" title="Directions" onclick="event.stopPropagation()">
+                        <a href="${dirUrl}" target="_blank" class="card-btn card-btn-secondary" title="Directions" onclick="event.stopPropagation(); if(window.UncleAnalytics) UncleAnalytics.trackDirectionsClick('${r.name.replace(/'/g, "\\'")}');">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="3 11 22 2 13 21 11 13 3 11"/>
                             </svg>
@@ -1782,6 +1797,18 @@
             updateCount(matches.length);
             if (currentView === 'list') renderList();
 
+            // Track search (debounced)
+            clearTimeout(window.searchTrackTimeout);
+            window.searchTrackTimeout = setTimeout(() => {
+                if (window.UncleAnalytics && searchQuery.length >= 2) {
+                    if (matches.length === 0) {
+                        UncleAnalytics.trackSearchNoResults(searchQuery);
+                    } else {
+                        UncleAnalytics.trackSearch(searchQuery);
+                    }
+                }
+            }, 800);
+
             // Dropdown with highlighting
             if (matches.length === 0) {
                 searchResults.innerHTML = '<div class="no-results">No restaurants found</div>';
@@ -1843,6 +1870,8 @@
         searchResults.addEventListener('click', (e) => {
             const item = e.target.closest('.search-result-item');
             if (item) {
+                // Track search result click
+                if (window.UncleAnalytics) UncleAnalytics.trackSearchResultClick(item.dataset.name);
                 flyTo(item.dataset.name, parseFloat(item.dataset.lat), parseFloat(item.dataset.lng));
                 searchResults.classList.remove('active');
                 searchInput.value = item.dataset.name;
@@ -1856,7 +1885,18 @@
             }
         });
 
+        // Track dropdown clicks for frustration detection
+        sortSelect.addEventListener('mousedown', () => {
+            if (window.UncleAnalytics) UncleAnalytics.trackDropdownClick();
+        });
+        sortSelect.addEventListener('touchstart', () => {
+            if (window.UncleAnalytics) UncleAnalytics.trackDropdownClick();
+        });
+
         sortSelect.addEventListener('change', () => {
+            // Track sort change
+            if (window.UncleAnalytics) UncleAnalytics.trackSortChange(sortSelect.value);
+
             if (sortSelect.value === 'proximity' && !userLocation) {
                 // Request location when user selects proximity sort
                 getUserLocation((success) => {
@@ -1893,5 +1933,8 @@
     <!-- GoatCounter Analytics -->
     <script data-goatcounter="https://uncleds.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
+
+    <!-- Uncle D's Custom Analytics -->
+    <script src="analytics.js"></script>
 </body>
 </html>

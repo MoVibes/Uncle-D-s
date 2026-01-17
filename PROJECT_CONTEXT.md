@@ -206,6 +206,8 @@ The color scheme and aesthetic is based on `Uncle D's.jpeg` (a BBQ menu):
 6. ~~**Mapbox upgrade** - For better visual styling~~ ✅ Done (Session 4)
 7. ~~**PWA conversion** - For offline access and app-like experience~~ ✅ Done (Session 4)
 8. **Fix iOS Safari dropdown delay** - Investigate further why dropdown requires delay after page load
+9. ~~**Basic analytics** - Track page views and visitors~~ ✅ Done (Session 5 - GoatCounter)
+10. **Custom analytics dashboard** - Track restaurant clicks, searches, and build branded admin page (see `ANALYTICS_DASHBOARD_PLAN.md`)
 
 ---
 
@@ -416,3 +418,104 @@ Used for exact drive times when clicking on restaurants:
 const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${restaurantLng},${restaurantLat}?access_token=${token}`;
 ```
 Returns driving duration in seconds, displayed as minutes in popup.
+
+---
+
+## Analytics
+
+### GoatCounter (Basic Analytics)
+Added in Session 5 for simple traffic tracking.
+
+**Dashboard:** https://uncleds.goatcounter.com
+
+**What it tracks:**
+- Page views over time
+- Unique visitors
+- Referrers (where traffic comes from)
+- Browsers & devices
+- Screen sizes
+- Geographic locations (country/region)
+
+**Implementation:**
+- Single script tag added to both `index.html` and `app/index.html`
+- No cookies, privacy-friendly, GDPR compliant
+- Free for non-commercial use
+
+```html
+<script data-goatcounter="https://uncleds.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+```
+
+### Custom Analytics Dashboard (Planned)
+See `ANALYTICS_DASHBOARD_PLAN.md` for detailed implementation plan using Supabase.
+
+---
+
+### Recent Updates (Session 5)
+
+1. **GoatCounter Analytics Added**
+   - Created GoatCounter account (code: `uncleds`)
+   - Dashboard at https://uncleds.goatcounter.com
+   - Added tracking script to both site versions:
+     - `/index.html` (Leaflet version)
+     - `/app/index.html` (Mapbox version)
+   - Tracks: page views, visitors, referrers, devices, locations
+
+2. **Custom Analytics Dashboard Built**
+   - **Supabase Project:** `uncle-ds-analytics`
+   - **Project URL:** `https://hdbhohbmroxfbolgaqaf.supabase.co`
+   - **Admin Email:** `wailers.rolls_0w@icloud.com`
+
+   **Database Schema:**
+   - `events` table with: session_id, event_type, event_value, page_url, referrer, user_agent, screen dimensions, app_version
+   - Row Level Security enabled (anonymous inserts, authenticated reads)
+   - Real-time enabled for live event feed
+
+   **Tracking Module (`app/analytics.js`):**
+   - Page views and session tracking
+   - Restaurant interactions (clicks, directions, view on map)
+   - Search behavior (queries, no results, result clicks)
+   - Feature usage (view toggle, sort changes, location requests)
+   - Frustration detection:
+     - Rage clicks (3+ clicks in same area within 2 seconds)
+     - Dropdown frustration (multiple clicks without value change)
+     - Quick bounces (sessions < 10 seconds)
+     - JavaScript errors
+
+   **Events Tracked:**
+   | Event | Description |
+   |-------|-------------|
+   | `page_view` | Initial page load |
+   | `restaurant_click` | Clicked marker or card |
+   | `directions_click` | Clicked directions button |
+   | `view_on_map_click` | Clicked "View" in popup |
+   | `search` | Search query (debounced) |
+   | `search_no_results` | Search with no matches |
+   | `search_result_click` | Clicked search result |
+   | `view_switch` | Toggled map/list view |
+   | `sort_change` | Changed sort option |
+   | `dropdown_click` | Clicked sort dropdown |
+   | `dropdown_frustration` | Multiple clicks without change |
+   | `location_request` | Location permission result |
+   | `rage_click` | Rapid repeated clicks |
+   | `js_error` | JavaScript error occurred |
+   | `session_end` | Session ended |
+   | `quick_bounce` | Left within 10 seconds |
+
+   **Admin Dashboard (`app/admin.html`):**
+   - Password-protected with Supabase Auth
+   - Real-time event feed
+   - Popular restaurants table
+   - Top searches table
+   - Friction detection panel
+   - Uncle D's branded styling
+
+3. **Files Created/Modified:**
+   - `app/analytics.js` - Custom tracking module
+   - `app/admin.html` - Admin dashboard with login
+   - `app/index.html` - Added tracking calls
+   - `app/sw.js` - Bumped to v11, added analytics.js to cache
+
+4. **Git Commits Made:**
+   - "Add GoatCounter analytics"
+   - "Add custom analytics with Supabase and admin dashboard"

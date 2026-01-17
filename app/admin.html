@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uncle D's Analytics Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --olive-gold: #A89968;
+            --olive-gold-light: #C4B88A;
+            --olive-gold-dark: #8B7D4F;
+            --forest-green: #3D5A3D;
+            --forest-green-light: #4A6B4A;
+            --cream: #FAF9F6;
+            --cream-dark: #F0EDE5;
+            --charcoal: #2D2D2D;
+            --red: #D64545;
+            --red-light: #FDEAEA;
+            --green: #45A164;
+            --green-light: #E8F5EC;
+            --blue: #4589D6;
+            --blue-light: #EAF2FD;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--cream-dark);
+            color: var(--charcoal);
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--cream);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(61, 90, 61, 0.15);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-logo {
+            margin-bottom: 30px;
+        }
+
+        .login-logo h1 {
+            font-family: 'Archivo Black', sans-serif;
+            color: var(--forest-green);
+            font-size: 1.8rem;
+        }
+
+        .login-logo .subtitle {
+            font-size: 0.75rem;
+            color: var(--olive-gold-dark);
+            letter-spacing: 0.2em;
+            margin-top: 5px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .login-form input {
+            padding: 14px 16px;
+            border: 2px solid var(--cream-dark);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--forest-green);
+        }
+
+        .login-btn {
+            padding: 14px;
+            background: var(--forest-green);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: var(--forest-green-light);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .login-error {
+            color: var(--red);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            background: var(--olive-gold);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo h1 {
+            font-family: 'Archivo Black', sans-serif;
+            color: var(--forest-green);
+            font-size: 1.3rem;
+        }
+
+        .header-logo span {
+            font-size: 0.7rem;
+            color: var(--cream);
+            letter-spacing: 0.15em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .refresh-btn, .logout-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .refresh-btn {
+            background: var(--cream);
+            color: var(--forest-green);
+            border: none;
+        }
+
+        .refresh-btn:hover {
+            background: white;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: var(--forest-green);
+            border: 2px solid var(--forest-green);
+        }
+
+        .logout-btn:hover {
+            background: var(--forest-green);
+            color: white;
+        }
+
+        /* Main Content */
+        .main {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--cream);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .stat-card h3 {
+            font-size: 0.8rem;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--forest-green);
+        }
+
+        .stat-card .change {
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .stat-card .change.positive { color: var(--green); }
+        .stat-card .change.negative { color: var(--red); }
+
+        /* Sections */
+        .section {
+            background: var(--cream);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-header h2 {
+            font-size: 1.1rem;
+            color: var(--charcoal);
+        }
+
+        .section-header .badge {
+            background: var(--forest-green);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px;
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--cream-dark);
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--cream-dark);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table .rank {
+            font-weight: 700;
+            color: var(--olive-gold-dark);
+            width: 40px;
+        }
+
+        .data-table .count {
+            font-weight: 600;
+            color: var(--forest-green);
+            text-align: right;
+        }
+
+        /* Real-time Feed */
+        .feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .feed-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: var(--cream-dark);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feed-item .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .feed-item .dot.page_view { background: var(--blue); }
+        .feed-item .dot.restaurant_click { background: var(--green); }
+        .feed-item .dot.directions_click { background: var(--olive-gold); }
+        .feed-item .dot.search { background: #9B59B6; }
+        .feed-item .dot.error { background: var(--red); }
+        .feed-item .dot.default { background: #888; }
+
+        .feed-item .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feed-item .event-type {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .feed-item .event-value {
+            color: #666;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .feed-item .time {
+            font-size: 0.75rem;
+            color: #999;
+            white-space: nowrap;
+        }
+
+        /* Friction Panel */
+        .friction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .friction-card {
+            background: var(--cream-dark);
+            padding: 16px;
+            border-radius: 10px;
+            border-left: 4px solid var(--red);
+        }
+
+        .friction-card.warning {
+            border-left-color: var(--olive-gold);
+        }
+
+        .friction-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .friction-card .count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--charcoal);
+        }
+
+        .friction-card .desc {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--cream-dark);
+            border-top-color: var(--forest-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .main {
+                padding: 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-card .value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Two column layout for larger screens */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <div class="login-logo">
+                <h1>UNCLE D'S</h1>
+                <div class="subtitle">ANALYTICS DASHBOARD</div>
+            </div>
+            <form class="login-form" id="loginForm">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
+            </form>
+            <div class="login-error" id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <header class="header">
+            <div class="header-logo">
+                <div>
+                    <h1>UNCLE D'S</h1>
+                    <span>ANALYTICS</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="refresh-btn" onclick="loadData()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6"/>
+                        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                    </svg>
+                    Refresh
+                </button>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Today</h3>
+                    <div class="value" id="todayViews">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>This Week</h3>
+                    <div class="value" id="weekViews">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Views</h3>
+                    <div class="value" id="totalViews">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Unique Sessions</h3>
+                    <div class="value" id="uniqueSessions">-</div>
+                </div>
+            </div>
+
+            <!-- Real-time Feed -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Live Activity</h2>
+                    <span class="badge" id="liveStatus">Connecting...</span>
+                </div>
+                <div class="feed" id="liveFeed">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="two-col">
+                <!-- Popular Restaurants -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Popular Restaurants</h2>
+                    </div>
+                    <div id="popularRestaurants">
+                        <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                </div>
+
+                <!-- Top Searches -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Top Searches</h2>
+                    </div>
+                    <div id="topSearches">
+                        <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Friction Detection -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Friction Detection</h2>
+                </div>
+                <div class="friction-grid" id="frictionPanel">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase config
+        const SUPABASE_URL = 'https://hdbhohbmroxfbolgaqaf.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkYmhvaGJtcm94ZmJvbGdhcWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MjQzNjksImV4cCI6MjA4NDIwMDM2OX0.9gsO-nC02l80KNWyqxfU8mGOOLJfRYAPl_Yo0CdGYRM';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // DOM elements
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const loginBtn = document.getElementById('loginBtn');
+
+        // Real-time subscription
+        let realtimeChannel = null;
+        let feedItems = [];
+        const MAX_FEED_ITEMS = 50;
+
+        // Check if already logged in
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                showDashboard();
+            }
+        }
+
+        // Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginError.textContent = '';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) {
+                loginError.textContent = error.message;
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            } else {
+                showDashboard();
+            }
+        });
+
+        // Logout
+        async function logout() {
+            await supabase.auth.signOut();
+            if (realtimeChannel) {
+                supabase.removeChannel(realtimeChannel);
+            }
+            dashboard.classList.remove('active');
+            loginScreen.style.display = 'flex';
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+        }
+
+        // Show dashboard
+        function showDashboard() {
+            loginScreen.style.display = 'none';
+            dashboard.classList.add('active');
+            loadData();
+            setupRealtime();
+        }
+
+        // Load all data
+        async function loadData() {
+            await Promise.all([
+                loadStats(),
+                loadPopularRestaurants(),
+                loadTopSearches(),
+                loadFrictionData(),
+                loadRecentEvents()
+            ]);
+        }
+
+        // Load stats
+        async function loadStats() {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+            const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+            // Today's views
+            const { count: todayCount } = await supabase
+                .from('events')
+                .select('*', { count: 'exact', head: true })
+                .eq('event_type', 'page_view')
+                .gte('created_at', todayStart);
+
+            // This week's views
+            const { count: weekCount } = await supabase
+                .from('events')
+                .select('*', { count: 'exact', head: true })
+                .eq('event_type', 'page_view')
+                .gte('created_at', weekStart);
+
+            // Total views
+            const { count: totalCount } = await supabase
+                .from('events')
+                .select('*', { count: 'exact', head: true })
+                .eq('event_type', 'page_view');
+
+            // Unique sessions
+            const { data: sessions } = await supabase
+                .from('events')
+                .select('session_id')
+                .eq('event_type', 'page_view');
+
+            const uniqueSessionCount = sessions ? new Set(sessions.map(s => s.session_id)).size : 0;
+
+            document.getElementById('todayViews').textContent = todayCount || 0;
+            document.getElementById('weekViews').textContent = weekCount || 0;
+            document.getElementById('totalViews').textContent = totalCount || 0;
+            document.getElementById('uniqueSessions').textContent = uniqueSessionCount;
+        }
+
+        // Load popular restaurants
+        async function loadPopularRestaurants() {
+            const { data, error } = await supabase
+                .from('events')
+                .select('event_value')
+                .in('event_type', ['restaurant_click', 'directions_click', 'view_on_map_click'])
+                .not('event_value', 'is', null)
+                .order('created_at', { ascending: false })
+                .limit(500);
+
+            if (error || !data || data.length === 0) {
+                document.getElementById('popularRestaurants').innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                        </svg>
+                        <p>No restaurant data yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Count occurrences
+            const counts = {};
+            data.forEach(row => {
+                counts[row.event_value] = (counts[row.event_value] || 0) + 1;
+            });
+
+            // Sort and take top 10
+            const sorted = Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            document.getElementById('popularRestaurants').innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Restaurant</th>
+                            <th>Clicks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sorted.map(([name, count], i) => `
+                            <tr>
+                                <td class="rank">${i + 1}</td>
+                                <td>${name}</td>
+                                <td class="count">${count}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Load top searches
+        async function loadTopSearches() {
+            const { data, error } = await supabase
+                .from('events')
+                .select('event_value, event_type')
+                .in('event_type', ['search', 'search_no_results'])
+                .not('event_value', 'is', null)
+                .order('created_at', { ascending: false })
+                .limit(500);
+
+            if (error || !data || data.length === 0) {
+                document.getElementById('topSearches').innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <p>No search data yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Count occurrences
+            const counts = {};
+            const noResults = new Set();
+            data.forEach(row => {
+                const term = row.event_value.toLowerCase();
+                counts[term] = (counts[term] || 0) + 1;
+                if (row.event_type === 'search_no_results') {
+                    noResults.add(term);
+                }
+            });
+
+            // Sort and take top 10
+            const sorted = Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            document.getElementById('topSearches').innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Search Term</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sorted.map(([term, count], i) => `
+                            <tr>
+                                <td class="rank">${i + 1}</td>
+                                <td>${term}${noResults.has(term) ? ' <span style="color: var(--red); font-size: 0.75rem;">(no results)</span>' : ''}</td>
+                                <td class="count">${count}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Load friction data
+        async function loadFrictionData() {
+            const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+            // Get friction events
+            const { data, error } = await supabase
+                .from('events')
+                .select('event_type, event_value')
+                .in('event_type', ['rage_click', 'dropdown_frustration', 'quick_bounce', 'js_error'])
+                .gte('created_at', weekStart);
+
+            const counts = {
+                rage_click: 0,
+                dropdown_frustration: 0,
+                quick_bounce: 0,
+                js_error: 0
+            };
+
+            if (data) {
+                data.forEach(row => {
+                    counts[row.event_type] = (counts[row.event_type] || 0) + 1;
+                });
+            }
+
+            document.getElementById('frictionPanel').innerHTML = `
+                <div class="friction-card">
+                    <h4>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M15 9l-6 6M9 9l6 6"/>
+                        </svg>
+                        Rage Clicks
+                    </h4>
+                    <div class="count">${counts.rage_click}</div>
+                    <div class="desc">Rapid repeated clicks (frustration)</div>
+                </div>
+                <div class="friction-card warning">
+                    <h4>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--olive-gold)" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <path d="M9 9l6 6M15 9l-6 6"/>
+                        </svg>
+                        Dropdown Issues
+                    </h4>
+                    <div class="count">${counts.dropdown_frustration}</div>
+                    <div class="desc">Clicks without dropdown changing</div>
+                </div>
+                <div class="friction-card warning">
+                    <h4>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--olive-gold)" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                        Quick Bounces
+                    </h4>
+                    <div class="count">${counts.quick_bounce}</div>
+                    <div class="desc">Left within 10 seconds</div>
+                </div>
+                <div class="friction-card">
+                    <h4>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <path d="M12 9v4M12 17h.01"/>
+                        </svg>
+                        JS Errors
+                    </h4>
+                    <div class="count">${counts.js_error}</div>
+                    <div class="desc">JavaScript errors caught</div>
+                </div>
+            `;
+        }
+
+        // Load recent events for feed
+        async function loadRecentEvents() {
+            const { data, error } = await supabase
+                .from('events')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (data) {
+                feedItems = data;
+                renderFeed();
+            }
+        }
+
+        // Setup realtime subscription
+        function setupRealtime() {
+            document.getElementById('liveStatus').textContent = 'Connecting...';
+
+            realtimeChannel = supabase
+                .channel('events-channel')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'events'
+                }, (payload) => {
+                    // Add new event to feed
+                    feedItems.unshift(payload.new);
+                    if (feedItems.length > MAX_FEED_ITEMS) {
+                        feedItems.pop();
+                    }
+                    renderFeed();
+
+                    // Update stats
+                    loadStats();
+                })
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        document.getElementById('liveStatus').textContent = 'Live';
+                        document.getElementById('liveStatus').style.background = 'var(--green)';
+                    } else if (status === 'CLOSED') {
+                        document.getElementById('liveStatus').textContent = 'Disconnected';
+                        document.getElementById('liveStatus').style.background = 'var(--red)';
+                    }
+                });
+        }
+
+        // Render feed
+        function renderFeed() {
+            const feed = document.getElementById('liveFeed');
+
+            if (feedItems.length === 0) {
+                feed.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        <p>Waiting for events...</p>
+                    </div>
+                `;
+                return;
+            }
+
+            feed.innerHTML = feedItems.map(event => {
+                const time = new Date(event.created_at).toLocaleTimeString();
+                const dotClass = getDotClass(event.event_type);
+                const displayType = formatEventType(event.event_type);
+
+                return `
+                    <div class="feed-item">
+                        <div class="dot ${dotClass}"></div>
+                        <div class="content">
+                            <div class="event-type">${displayType}</div>
+                            ${event.event_value ? `<div class="event-value">${event.event_value}</div>` : ''}
+                        </div>
+                        <div class="time">${time}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get dot class for event type
+        function getDotClass(eventType) {
+            if (eventType === 'page_view') return 'page_view';
+            if (eventType.includes('restaurant') || eventType.includes('directions')) return 'restaurant_click';
+            if (eventType.includes('search')) return 'search';
+            if (eventType.includes('error') || eventType.includes('rage') || eventType.includes('frustration')) return 'error';
+            return 'default';
+        }
+
+        // Format event type for display
+        function formatEventType(eventType) {
+            return eventType
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>
