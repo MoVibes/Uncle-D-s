@@ -1432,9 +1432,11 @@
             restaurants.forEach(r => bounds.extend([r.lng, r.lat]));
             map.fitBounds(bounds, { padding: 80, maxZoom: 12 });
 
-            // Hide loading
+            // Hide loading - disable pointer events immediately, then fade out
+            const loadingEl = document.getElementById('loading');
+            loadingEl.style.pointerEvents = 'none';
             setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
+                loadingEl.classList.add('hidden');
             }, 600);
 
             // Click handler
