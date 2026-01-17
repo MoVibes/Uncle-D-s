@@ -598,7 +598,14 @@
         const SUPABASE_URL = 'https://hdbhohbmroxfbolgaqaf.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkYmhvaGJtcm94ZmJvbGdhcWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MjQzNjksImV4cCI6MjA4NDIwMDM2OX0.9gsO-nC02l80KNWyqxfU8mGOOLJfRYAPl_Yo0CdGYRM';
 
+        // Check if Supabase loaded
+        if (!window.supabase) {
+            console.error('[Init] Supabase library not loaded!');
+            document.getElementById('loginError').textContent = 'Failed to load authentication library. Please refresh.';
+        }
+
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('[Init] Supabase client created');
 
         // DOM elements
         const loginScreen = document.getElementById('loginScreen');
@@ -630,17 +637,30 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password
-            });
+            console.log('[Auth] Attempting login for:', email);
 
-            if (error) {
-                loginError.textContent = error.message;
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                console.log('[Auth] Response:', { data, error });
+
+                if (error) {
+                    console.error('[Auth] Login error:', error);
+                    loginError.textContent = error.message;
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                } else {
+                    console.log('[Auth] Login successful, showing dashboard');
+                    showDashboard();
+                }
+            } catch (err) {
+                console.error('[Auth] Exception:', err);
+                loginError.textContent = 'Connection error: ' + err.message;
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Sign In';
-            } else {
-                showDashboard();
             }
         });
 
