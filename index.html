@@ -120,6 +120,52 @@
             color: var(--forest-green);
         }
 
+        /* Header Right Section */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 3px;
+        }
+
+        .view-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: var(--forest-green);
+        }
+
+        .view-toggle-btn.active {
+            background: var(--cream);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .view-toggle-btn:not(.active):hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .view-toggle-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
         .restaurant-count {
             background: var(--forest-green);
             color: var(--cream);
@@ -138,6 +184,199 @@
             right: 0;
             bottom: 0;
             z-index: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        #map.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* List View */
+        #listView {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--cream);
+            z-index: 2;
+            overflow-y: auto;
+            display: none;
+            padding: 1.5rem;
+        }
+
+        #listView.active {
+            display: block;
+        }
+
+        .list-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--cream-dark);
+        }
+
+        .list-header h2 {
+            font-family: 'Archivo Black', sans-serif;
+            color: var(--forest-green);
+            font-size: 1.3rem;
+        }
+
+        .sort-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--cream-dark);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            background: white;
+            color: var(--charcoal);
+            cursor: pointer;
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--forest-green);
+        }
+
+        /* Restaurant Cards */
+        .restaurant-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .restaurant-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 12px var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+            border-color: var(--olive-gold);
+        }
+
+        .restaurant-card:active {
+            transform: translateY(0);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--forest-green);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--cream);
+        }
+
+        .card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--forest-green);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-content p {
+            font-size: 0.85rem;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .card-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .card-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .card-btn-map {
+            background: var(--olive-gold);
+            color: var(--forest-green);
+        }
+
+        .card-btn-map:hover {
+            background: var(--olive-gold-dark);
+            transform: scale(1.05);
+        }
+
+        .card-btn-directions {
+            background: var(--cream-dark);
+            color: var(--charcoal);
+        }
+
+        .card-btn-directions:hover {
+            background: #E5E2DA;
+            transform: scale(1.05);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #888;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            color: var(--cream-dark);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--charcoal);
         }
 
         /* Custom Popup Styling */
@@ -259,20 +498,6 @@
             color: var(--cream);
         }
 
-        /* Marker Cluster Styling */
-        .marker-cluster {
-            background: var(--olive-gold);
-            border: 3px solid var(--cream);
-            border-radius: 50%;
-            color: var(--forest-green);
-            font-weight: 700;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-        }
-
         /* Search Results Dropdown */
         .search-results {
             position: absolute;
@@ -352,17 +577,67 @@
                 margin-top: 0.5rem;
             }
 
+            .header-right {
+                gap: 0.5rem;
+            }
+
+            .view-toggle-btn {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.75rem;
+            }
+
+            .view-toggle-btn span {
+                display: none;
+            }
+
             .restaurant-count {
                 font-size: 0.75rem;
                 padding: 0.4rem 0.8rem;
             }
 
-            #map {
+            #map, #listView {
                 top: 110px;
             }
 
             .leaflet-popup-content {
                 min-width: 240px;
+            }
+
+            #listView {
+                padding: 1rem;
+            }
+
+            .restaurant-card {
+                padding: 1rem;
+            }
+
+            .card-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+            }
+
+            .card-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .card-content h3 {
+                font-size: 0.9rem;
+            }
+
+            .card-content p {
+                font-size: 0.8rem;
+            }
+
+            .card-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .card-btn svg {
+                width: 16px;
+                height: 16px;
             }
         }
 
@@ -434,6 +709,24 @@
         .leaflet-control-zoom-out {
             border-radius: 0 0 8px 8px !important;
         }
+
+        /* Scrollbar styling for list view */
+        #listView::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #listView::-webkit-scrollbar-track {
+            background: var(--cream-dark);
+        }
+
+        #listView::-webkit-scrollbar-thumb {
+            background: var(--olive-gold);
+            border-radius: 4px;
+        }
+
+        #listView::-webkit-scrollbar-thumb:hover {
+            background: var(--olive-gold-dark);
+        }
     </style>
 </head>
 <body>
@@ -460,14 +753,54 @@
                 <div class="search-results" id="searchResults"></div>
             </div>
 
-            <div class="restaurant-count" id="restaurantCount">
-                81 spots
+            <div class="header-right">
+                <div class="view-toggle">
+                    <button class="view-toggle-btn active" id="mapViewBtn" title="Map View">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                            <line x1="8" y1="2" x2="8" y2="18"/>
+                            <line x1="16" y1="6" x2="16" y2="22"/>
+                        </svg>
+                        <span>Map</span>
+                    </button>
+                    <button class="view-toggle-btn" id="listViewBtn" title="List View">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                        <span>List</span>
+                    </button>
+                </div>
+
+                <div class="restaurant-count" id="restaurantCount">
+                    81 spots
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Map -->
     <div id="map"></div>
+
+    <!-- List View -->
+    <div id="listView">
+        <div class="list-container">
+            <div class="list-header">
+                <h2>All Restaurants</h2>
+                <select class="sort-select" id="sortSelect">
+                    <option value="name">Sort by Name</option>
+                    <option value="address">Sort by Address</option>
+                </select>
+            </div>
+            <div class="restaurant-list" id="restaurantList">
+                <!-- Cards will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -492,6 +825,12 @@
     "address": "7325 St Andrews Church Rd, Louisville, KY 40214",
     "lat": 38.1539235,
     "lng": -85.802952
+  },
+  {
+    "name": "Al-Sham Market",
+    "address": "3819 Bardstown Rd, Ste B, Louisville, KY 40218",
+    "lat": 38.1965,
+    "lng": -85.6544
   },
   {
     "name": "Alwatan Bakery",
@@ -528,6 +867,18 @@
     "address": "1812 W Muhammad Ali Blvd, Louisville, KY 40203",
     "lat": 38.2536055,
     "lng": -85.7814802
+  },
+  {
+    "name": "Bodega Mi Sueño",
+    "address": "3646 Mall Rd, Louisville, KY 40218",
+    "lat": 38.2106,
+    "lng": -85.651
+  },
+  {
+    "name": "Carriss' Grocery",
+    "address": "7 Southville Pike, Shelbyville, KY 40065",
+    "lat": 38.11,
+    "lng": -85.1832
   },
   {
     "name": "Dalat's Banh Mi and Boba",
@@ -602,6 +953,12 @@
     "lng": -85.869621
   },
   {
+    "name": "Guatelinda Taqueria #3 (Citadel Way)",
+    "address": "8603 Citadel Way, Louisville, KY 40220",
+    "lat": 38.2165,
+    "lng": -85.556
+  },
+  {
     "name": "Hilltop Chicken",
     "address": "1209 W Hill St, Louisville, KY 40210",
     "lat": 38.2276743,
@@ -648,6 +1005,12 @@
     "address": "4123 Flintlock Dr, Louisville, KY 40216",
     "lat": 38.1686679,
     "lng": -85.8381389
+  },
+  {
+    "name": "Kathmandu Kitchen & Bar",
+    "address": "3825 Bardstown Rd, Ste 108, Louisville, KY 40218",
+    "lat": 38.196,
+    "lng": -85.6537
   },
   {
     "name": "Ken Tex BBQ",
@@ -746,6 +1109,12 @@
     "lng": -85.4678188
   },
   {
+    "name": "Mashallah African Restaurant",
+    "address": "4109 Bardstown Rd, Ste 104, Louisville, KY 40218",
+    "lat": 38.1924,
+    "lng": -85.6463
+  },
+  {
     "name": "Mike Linnig's Restaurant",
     "address": "9308 Cane Run Rd, Louisville, KY 40258",
     "lat": 38.0936166,
@@ -764,10 +1133,22 @@
     "lng": -85.6480065
   },
   {
+    "name": "Otter Creek Tavern",
+    "address": "6860 Flaherty Rd, Vine Grove, KY 40175",
+    "lat": 37.8107,
+    "lng": -85.9817
+  },
+  {
     "name": "Restaurant Guatelinda (Poplar Level Rd)",
     "address": "5049 Poplar Level Rd, Louisville, KY 40219",
     "lat": 38.1654568,
     "lng": -85.6795832
+  },
+  {
+    "name": "Shalimar Restaurant",
+    "address": "1850 S Hurstbourne Pkwy, Ste 125, Louisville, KY 40220",
+    "lat": 38.2217,
+    "lng": -85.5836
   },
   {
     "name": "Shawarma Guys",
@@ -782,6 +1163,12 @@
     "lng": -85.6873127
   },
   {
+    "name": "Sissy's Tacos",
+    "address": "580 N Bardstown Rd, Ste 3, Mount Washington, KY 40047",
+    "lat": 38.0521,
+    "lng": -85.5472
+  },
+  {
     "name": "Soulful Choices",
     "address": "4532 W Broadway, Louisville, KY 40211",
     "lat": 38.2272989,
@@ -792,6 +1179,12 @@
     "address": "1831 W Jefferson St, Louisville, KY 40203",
     "lat": 38.2475858,
     "lng": -85.7814082
+  },
+  {
+    "name": "Sweet Havana",
+    "address": "5510 Fern Valley Rd, Ste 101, Louisville, KY 40228",
+    "lat": 38.1552,
+    "lng": -85.658
   },
   {
     "name": "Taco Choza",
@@ -830,6 +1223,12 @@
     "lng": -85.6864258
   },
   {
+    "name": "Taqueria El Titi",
+    "address": "8219 Minor Ln, Louisville, KY 40219",
+    "lat": 38.1263,
+    "lng": -85.7083
+  },
+  {
     "name": "Taqueria Los Gorditos",
     "address": "2017 Brownsboro Rd, Louisville, KY 40206",
     "lat": 38.2631892,
@@ -840,6 +1239,12 @@
     "address": "5700 Outer Loop, Louisville, KY 40219",
     "lat": 38.1306098,
     "lng": -85.6985093
+  },
+  {
+    "name": "The Charcoal Restaurant",
+    "address": "2805 N Hurstbourne Pkwy, Ste 100, Louisville, KY 40223",
+    "lat": 38.2861,
+    "lng": -85.5701
   },
   {
     "name": "The House of Marigold",
@@ -858,6 +1263,12 @@
     "address": "2922 Taylor Blvd, Louisville, KY 40208",
     "lat": 38.2054166,
     "lng": -85.7683538
+  },
+  {
+    "name": "Tomo Japanese Ramen & Sushi",
+    "address": "5023 Mud Ln, Ste 160, Louisville, KY 40229",
+    "lat": 38.0919,
+    "lng": -85.6718
   },
   {
     "name": "Veronica's Mexican (Poplar Level Rd)",
@@ -882,86 +1293,11 @@
     "address": "1808 Berry Blvd, Louisville, KY 40215",
     "lat": 38.2037813,
     "lng": -85.7766688
-  },
-  {
-    "name": "Taqueria El Titi",
-    "address": "8219 Minor Ln, Louisville, KY 40219",
-    "lat": 38.1263,
-    "lng": -85.7083
-  },
-  {
-    "name": "Al-Sham Market",
-    "address": "3819 Bardstown Rd, Ste B, Louisville, KY 40218",
-    "lat": 38.1965,
-    "lng": -85.6544
-  },
-  {
-    "name": "Kathmandu Kitchen & Bar",
-    "address": "3825 Bardstown Rd, Ste 108, Louisville, KY 40218",
-    "lat": 38.196,
-    "lng": -85.6537
-  },
-  {
-    "name": "Mashallah African Restaurant",
-    "address": "4109 Bardstown Rd, Ste 104, Louisville, KY 40218",
-    "lat": 38.1924,
-    "lng": -85.6463
-  },
-  {
-    "name": "Shalimar Restaurant",
-    "address": "1850 S Hurstbourne Pkwy, Ste 125, Louisville, KY 40220",
-    "lat": 38.2217,
-    "lng": -85.5836
-  },
-  {
-    "name": "Sissy's Tacos",
-    "address": "580 N Bardstown Rd, Ste 3, Mount Washington, KY 40047",
-    "lat": 38.0521,
-    "lng": -85.5472
-  },
-  {
-    "name": "Sweet Havana",
-    "address": "5510 Fern Valley Rd, Ste 101, Louisville, KY 40228",
-    "lat": 38.1552,
-    "lng": -85.658
-  },
-  {
-    "name": "The Charcoal Restaurant",
-    "address": "2805 N Hurstbourne Pkwy, Ste 100, Louisville, KY 40223",
-    "lat": 38.2861,
-    "lng": -85.5701
-  },
-  {
-    "name": "Tomo Japanese Ramen & Sushi",
-    "address": "5023 Mud Ln, Ste 160, Louisville, KY 40229",
-    "lat": 38.0919,
-    "lng": -85.6718
-  },
-  {
-    "name": "Carriss' Grocery",
-    "address": "7 Southville Pike, Shelbyville, KY 40065",
-    "lat": 38.11,
-    "lng": -85.1832
-  },
-  {
-    "name": "Bodega Mi Sueño",
-    "address": "3646 Mall Rd, Louisville, KY 40218",
-    "lat": 38.2106,
-    "lng": -85.651
-  },
-  {
-    "name": "Guatelinda Taqueria #3 (Citadel Way)",
-    "address": "8603 Citadel Way, Louisville, KY 40220",
-    "lat": 38.2165,
-    "lng": -85.556
-  },
-  {
-    "name": "Otter Creek Tavern",
-    "address": "6860 Flaherty Rd, Vine Grove, KY 40175",
-    "lat": 37.8107,
-    "lng": -85.9817
   }
 ];
+
+        // Sort restaurants alphabetically by default
+        restaurants.sort((a, b) => a.name.localeCompare(b.name));
 
         // Initialize map
         const map = L.map('map', {
@@ -969,7 +1305,7 @@
             scrollWheelZoom: true
         }).setView([38.2, -85.72], 11);
 
-        // Add tile layer with a clean, modern style
+        // Add tile layer
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
@@ -1049,27 +1385,170 @@
             });
         });
 
-        // Search functionality
+        // DOM Elements
         const searchInput = document.getElementById('searchInput');
         const searchResults = document.getElementById('searchResults');
         const restaurantCount = document.getElementById('restaurantCount');
+        const mapViewBtn = document.getElementById('mapViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const mapEl = document.getElementById('map');
+        const listViewEl = document.getElementById('listView');
+        const restaurantList = document.getElementById('restaurantList');
+        const sortSelect = document.getElementById('sortSelect');
 
+        let currentView = 'map';
+        let currentSearchQuery = '';
+
+        // View Toggle
+        function switchToMapView() {
+            currentView = 'map';
+            mapViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+            mapEl.classList.remove('hidden');
+            listViewEl.classList.remove('active');
+            map.invalidateSize();
+        }
+
+        function switchToListView() {
+            currentView = 'list';
+            listViewBtn.classList.add('active');
+            mapViewBtn.classList.remove('active');
+            mapEl.classList.add('hidden');
+            listViewEl.classList.add('active');
+            renderList();
+        }
+
+        mapViewBtn.addEventListener('click', switchToMapView);
+        listViewBtn.addEventListener('click', switchToListView);
+
+        // Create restaurant card HTML
+        function createCardHTML(restaurant) {
+            const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(restaurant.address)}`;
+
+            return `
+                <div class="restaurant-card" data-name="${restaurant.name}" data-lat="${restaurant.lat}" data-lng="${restaurant.lng}">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3>${restaurant.name}</h3>
+                        <p>${restaurant.address}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-btn card-btn-map" title="Show on map" onclick="event.stopPropagation(); showOnMap('${restaurant.name}', ${restaurant.lat}, ${restaurant.lng})">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                                <line x1="8" y1="2" x2="8" y2="18"/>
+                                <line x1="16" y1="6" x2="16" y2="22"/>
+                            </svg>
+                        </button>
+                        <a href="${directionsUrl}" target="_blank" class="card-btn card-btn-directions" title="Get directions" onclick="event.stopPropagation()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render list view
+        function renderList() {
+            let filtered = restaurants;
+
+            // Filter by search
+            if (currentSearchQuery) {
+                filtered = restaurants.filter(r =>
+                    r.name.toLowerCase().includes(currentSearchQuery) ||
+                    r.address.toLowerCase().includes(currentSearchQuery)
+                );
+            }
+
+            // Sort
+            const sortBy = sortSelect.value;
+            filtered.sort((a, b) => {
+                if (sortBy === 'name') {
+                    return a.name.localeCompare(b.name);
+                } else {
+                    return a.address.localeCompare(b.address);
+                }
+            });
+
+            // Update count
+            restaurantCount.textContent = `${filtered.length} spots`;
+
+            // Render cards
+            if (filtered.length === 0) {
+                restaurantList.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <h3>No restaurants found</h3>
+                        <p>Try a different search term</p>
+                    </div>
+                `;
+            } else {
+                restaurantList.innerHTML = filtered.map(createCardHTML).join('');
+            }
+
+            // Add click handlers to cards
+            document.querySelectorAll('.restaurant-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const name = card.dataset.name;
+                    const lat = parseFloat(card.dataset.lat);
+                    const lng = parseFloat(card.dataset.lng);
+                    showOnMap(name, lat, lng);
+                });
+            });
+        }
+
+        // Show restaurant on map
+        window.showOnMap = function(name, lat, lng) {
+            switchToMapView();
+            map.setView([lat, lng], 16);
+
+            const markerData = markers.find(m => m.restaurant.name === name);
+            if (markerData) {
+                setTimeout(() => {
+                    markerData.marker.openPopup();
+                }, 300);
+            }
+        };
+
+        // Sort change handler
+        sortSelect.addEventListener('change', renderList);
+
+        // Search functionality
         searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
+            currentSearchQuery = e.target.value.toLowerCase().trim();
 
-            if (query.length === 0) {
+            if (currentSearchQuery.length === 0) {
                 searchResults.classList.remove('active');
                 restaurantCount.textContent = `${restaurants.length} spots`;
+
+                if (currentView === 'list') {
+                    renderList();
+                }
                 return;
             }
 
             const filtered = restaurants.filter(r =>
-                r.name.toLowerCase().includes(query) ||
-                r.address.toLowerCase().includes(query)
+                r.name.toLowerCase().includes(currentSearchQuery) ||
+                r.address.toLowerCase().includes(currentSearchQuery)
             );
 
             restaurantCount.textContent = `${filtered.length} spots`;
 
+            // Update list view if active
+            if (currentView === 'list') {
+                renderList();
+            }
+
+            // Show dropdown results (for map view mainly)
             if (filtered.length === 0) {
                 searchResults.innerHTML = '<div class="no-results">No restaurants found</div>';
             } else {
@@ -1092,16 +1571,11 @@
                 const lng = parseFloat(item.dataset.lng);
                 const name = item.dataset.name;
 
-                map.setView([lat, lng], 16);
-
-                // Find and open the marker popup
-                const markerData = markers.find(m => m.restaurant.name === name);
-                if (markerData) {
-                    markerData.marker.openPopup();
-                }
+                showOnMap(name, lat, lng);
 
                 searchResults.classList.remove('active');
                 searchInput.value = name;
+                currentSearchQuery = name.toLowerCase();
             }
         });
 
