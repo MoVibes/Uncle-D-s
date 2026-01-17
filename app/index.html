@@ -455,6 +455,28 @@
             line-height: 1.3;
         }
 
+        .popup-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(250, 249, 246, 0.9);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+        }
+
+        .popup-time svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .popup-time.loading {
+            opacity: 0.7;
+        }
+
         .popup-body {
             padding: 16px 20px 20px;
         }
@@ -668,6 +690,20 @@
             font-weight: 600;
             color: var(--forest-green);
             margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .card-time {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--olive-gold-dark);
+            background: rgba(168, 153, 104, 0.15);
+            padding: 3px 8px;
+            border-radius: var(--radius-full);
+            white-space: nowrap;
         }
 
         .card-description {
@@ -1023,7 +1059,7 @@
                 <h2>All Restaurants</h2>
                 <select class="sort-select" id="sortSelect">
                     <option value="name">Sort by Name</option>
-                    <option value="address">Sort by Address</option>
+                    <option value="proximity">Sort by Proximity</option>
                 </select>
             </div>
             <div class="restaurant-list" id="restaurantList"></div>
@@ -1277,14 +1313,28 @@
         let currentPopup = null;
 
         // Create popup HTML
-        function createPopupHTML(props) {
+        function createPopupHTML(props, showLoadingTime = false) {
             const googleUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(props.name + ', ' + props.address)}`;
             const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(props.address)}`;
+
+            // Get estimated time
+            const restaurant = restaurants.find(r => r.name === props.name);
+            const distInfo = restaurant ? getDistanceInfo(restaurant) : null;
+            const timeHtml = distInfo ? `
+                <div class="popup-time${showLoadingTime ? ' loading' : ''}" id="popupTime">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>${showLoadingTime ? 'Calculating...' : formatTime(distInfo.minutes)}</span>
+                </div>
+            ` : '';
 
             return `
                 <div class="popup-content">
                     <div class="popup-header">
                         <h3>${props.name}</h3>
+                        ${timeHtml}
                     </div>
                     <div class="popup-body">
                         ${props.description ? `<p class="popup-description">${props.description}</p>` : ''}
@@ -1313,6 +1363,20 @@
                     </div>
                 </div>
             `;
+        }
+
+        // Update popup with exact time
+        async function updatePopupWithExactTime(restaurantName) {
+            const restaurant = restaurants.find(r => r.name === restaurantName);
+            if (!restaurant || !userLocation) return;
+
+            const exactMinutes = await fetchExactDriveTime(restaurant);
+            const popupTime = document.getElementById('popupTime');
+            if (popupTime && exactMinutes !== null) {
+                popupTime.classList.remove('loading');
+                const timeText = exactMinutes < 60 ? `${exactMinutes} min` : `${Math.floor(exactMinutes/60)}h ${exactMinutes%60}m`;
+                popupTime.querySelector('span').textContent = timeText;
+            }
         }
 
         // Map load handler
@@ -1370,8 +1434,11 @@
 
                 currentPopup = new mapboxgl.Popup({ offset: 15, maxWidth: '320px' })
                     .setLngLat(coords)
-                    .setHTML(createPopupHTML(props))
+                    .setHTML(createPopupHTML(props, true))
                     .addTo(map);
+
+                // Fetch exact drive time
+                updatePopupWithExactTime(props.name);
             });
 
             // Hover effects
@@ -1404,6 +1471,87 @@
         let currentView = 'map';
         let searchQuery = '';
         let searchFocusIndex = -1;
+        let userLocation = null;
+
+        // Get user's location
+        function getUserLocation() {
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        console.log('User location:', userLocation);
+                        // Re-render list if in list view and sorted by proximity
+                        if (currentView === 'list' && sortSelect.value === 'proximity') {
+                            renderList();
+                        }
+                    },
+                    (error) => {
+                        console.log('Geolocation error:', error.message);
+                        userLocation = null;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            }
+        }
+
+        // Calculate distance between two points using Haversine formula (returns miles)
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 3959; // Earth's radius in miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        // Estimate driving time from distance (assumes avg 25 mph in urban areas with 1.3x road factor)
+        function estimateDriveTime(miles) {
+            const roadFactor = 1.3; // Roads aren't straight
+            const avgSpeed = 25; // mph average with traffic/lights
+            const minutes = (miles * roadFactor / avgSpeed) * 60;
+            return Math.round(minutes);
+        }
+
+        // Get distance and time for a restaurant
+        function getDistanceInfo(restaurant) {
+            if (!userLocation) return null;
+            const miles = calculateDistance(userLocation.lat, userLocation.lng, restaurant.lat, restaurant.lng);
+            const minutes = estimateDriveTime(miles);
+            return { miles, minutes };
+        }
+
+        // Format time display
+        function formatTime(minutes) {
+            if (minutes < 1) return '< 1 min';
+            if (minutes < 60) return `~${minutes} min`;
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return mins > 0 ? `~${hours}h ${mins}m` : `~${hours}h`;
+        }
+
+        // Fetch exact driving time from Mapbox Directions API
+        async function fetchExactDriveTime(restaurant) {
+            if (!userLocation) return null;
+            try {
+                const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLocation.lng},${userLocation.lat};${restaurant.lng},${restaurant.lat}?access_token=${mapboxgl.accessToken}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.routes && data.routes[0]) {
+                    return Math.round(data.routes[0].duration / 60); // Convert seconds to minutes
+                }
+            } catch (error) {
+                console.log('Directions API error:', error);
+            }
+            return null;
+        }
+
+        // Initialize geolocation
+        getUserLocation();
 
         // Highlight matching text
         function highlightText(text, query) {
@@ -1449,6 +1597,9 @@
         // Create card HTML
         function createCardHTML(r) {
             const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r.address)}`;
+            const distInfo = getDistanceInfo(r);
+            const timeDisplay = distInfo ? formatTime(distInfo.minutes) : '';
+
             return `
                 <div class="restaurant-card" data-name="${r.name}" data-lat="${r.lat}" data-lng="${r.lng}">
                     <div class="card-marker">
@@ -1457,7 +1608,7 @@
                         </svg>
                     </div>
                     <div class="card-content">
-                        <h3>${r.name}</h3>
+                        <h3>${r.name}${timeDisplay ? `<span class="card-time">${timeDisplay}</span>` : ''}</h3>
                         ${r.description ? `<p class="card-description">${r.description}</p>` : ''}
                         <p class="card-address">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -1491,10 +1642,16 @@
                 );
             }
 
-            list.sort((a, b) => sortSelect.value === 'name'
-                ? a.name.localeCompare(b.name)
-                : a.address.localeCompare(b.address)
-            );
+            // Sort the list
+            if (sortSelect.value === 'proximity' && userLocation) {
+                list.sort((a, b) => {
+                    const distA = calculateDistance(userLocation.lat, userLocation.lng, a.lat, a.lng);
+                    const distB = calculateDistance(userLocation.lat, userLocation.lng, b.lat, b.lng);
+                    return distA - distB;
+                });
+            } else {
+                list.sort((a, b) => a.name.localeCompare(b.name));
+            }
 
             updateCount(list.length);
 
@@ -1542,8 +1699,11 @@
                     if (currentPopup) currentPopup.remove();
                     currentPopup = new mapboxgl.Popup({ offset: 15, maxWidth: '320px' })
                         .setLngLat([r.lng, r.lat])
-                        .setHTML(createPopupHTML({ name: r.name, address: r.address, description: r.description }))
+                        .setHTML(createPopupHTML({ name: r.name, address: r.address, description: r.description }, true))
                         .addTo(map);
+
+                    // Fetch exact drive time
+                    updatePopupWithExactTime(r.name);
                 }
             }, 1200);
         };
