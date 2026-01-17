@@ -634,6 +634,60 @@
             border-color: var(--forest-green);
         }
 
+        /* Filter Chips */
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0 16px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .filter-chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border: 2px solid var(--cream-dark);
+            border-radius: var(--radius-full);
+            background: white;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--charcoal-light);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--olive-gold-light);
+            color: var(--charcoal);
+        }
+
+        .filter-chip.active {
+            background: var(--forest-green);
+            border-color: var(--forest-green);
+            color: white;
+        }
+
+        .filter-chip .count {
+            display: inline-block;
+            margin-left: 4px;
+            padding: 2px 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .filter-chip.active .count {
+            background: rgba(255,255,255,0.25);
+        }
+
         .restaurant-list {
             display: flex;
             flex-direction: column;
@@ -1090,6 +1144,7 @@
                     <option value="proximity">Sort by Proximity</option>
                 </select>
             </div>
+            <div class="filter-chips" id="filterChips"></div>
             <div class="restaurant-list" id="restaurantList"></div>
         </div>
     </div>
@@ -1100,88 +1155,91 @@
 
         // Restaurant Data
         const restaurants = [
-            {"name":"A Toda Madre","address":"8200 Preston Hwy, Louisville, KY 40219","lat":38.1332639,"lng":-85.6846969,"description":"Authentic Mexican street food featuring hand-made tortillas, birria tacos, and giant shareable machetes. Known for generous portions and bold flavors."},
-            {"name":"Abyssinia Ethiopian","address":"554 S 5th St, Louisville, KY 40202","lat":38.2495279,"lng":-85.7596494,"description":"Downtown Ethiopian restaurant serving authentic dishes like Doro Wot and Sambusa. Features a traditional coffee ceremony and vegetarian options."},
-            {"name":"African Best Restaurant","address":"7325 St Andrews Church Rd, Louisville, KY 40214","lat":38.1539235,"lng":-85.802952,"description":"Hidden gem serving authentic West African cuisine including Jollof rice, Egusi soup with fufu, and grilled tilapia with African seasoning."},
-            {"name":"Al-Sham Market","address":"3819 Bardstown Rd, Ste B, Louisville, KY 40218","lat":38.1965,"lng":-85.6544,"description":"Middle Eastern market and deli known for having the best falafel in Kentucky. Fresh shawarma sandwiches, grilled kabobs, and halal groceries."},
-            {"name":"Alwatan Bakery","address":"3711 Klondike Ln, Louisville, KY 40218","lat":38.2106445,"lng":-85.6396965,"description":"Beloved Middle Eastern bakery since 1992 serving fresh pita bread, falafel, shish kebabs, and authentic Palestinian sweets including homemade baklawa."},
-            {"name":"B&N Food Market","address":"5945 Elmburg Rd, Bagdad, KY 40003","lat":38.2618986,"lng":-85.0581353,"description":"Country store and market in rural Shelby County offering local goods, deli items, and Southern staples in a small-town atmosphere."},
-            {"name":"Banaadir Cafe and Grill","address":"5600 S 3rd St, Louisville, KY 40214","lat":38.1691433,"lng":-85.768872,"description":"Authentic Somali restaurant with 4.7 rating. Tender goat and lamb dishes, beef suqaar, sambusas, and traditional shaah tea in a family-friendly setting."},
-            {"name":"Bellissimo","address":"2217 Steier Ln, Louisville, KY 40218","lat":38.1979461,"lng":-85.6569047,"description":"Unique Italian-Afghan fusion restaurant serving fresh pasta, authentic Afghan kebabs, and Persian dishes. Louisville's first Afghan restaurant. All halal meat."},
-            {"name":"Big Hopp's Southern Eatery","address":"2913 Dixie Hwy, Louisville, KY 40216","lat":38.166334,"lng":-85.8297254,"description":"Southern food with a New Orleans flare. Famous for fried catfish, smothered pork chops, collard greens, and sweet potato casserole."},
-            {"name":"Big Momma's Soul Food Kitchen","address":"1812 W Muhammad Ali Blvd, Louisville, KY 40203","lat":38.2536055,"lng":-85.7814802,"description":"West Louisville soul food institution run by 'Big Momma' Jessie Green. Famous for baked spaghetti, smothered pork chops, and huge portions."},
-            {"name":"Bodega Mi Sueno","address":"3646 Mall Rd, Louisville, KY 40218","lat":38.2106,"lng":-85.651,"description":"Latin American grocery and restaurant offering authentic Hispanic products, fresh-made dishes, and traditional flavors from Central and South America."},
-            {"name":"Carriss' Grocery","address":"7 Southville Pike, Shelbyville, KY 40065","lat":38.11,"lng":-85.1832,"description":"Small-town country grocery store in Shelbyville serving local community favorites, deli sandwiches, and Southern comfort staples."},
-            {"name":"Dalat's Banh Mi and Boba","address":"6915 Southside Dr, Louisville, KY 40214","lat":38.1567326,"lng":-85.7636532,"description":"Vietnamese cafe since 2009 offering signature banh mi, pho, bun bo Hue, boba tea, and French pastries. Named after the charming city of Da Lat."},
-            {"name":"District 6 Vietnamese Gastropub","address":"3930 Shelbyville Rd, Louisville, KY 40207","lat":38.2526332,"lng":-85.6539333,"description":"Modern Vietnamese gastropub blending traditional and contemporary dishes with locally-sourced ingredients. Known for pork belly, pho, and craft cocktails."},
-            {"name":"Dixie Chicken (Dixie Hwy)","address":"3947 Dixie Hwy, Louisville, KY 40216","lat":38.166334,"lng":-85.8297254,"description":"Local favorite for crispy Southern fried chicken, generous portions, and home-cooked sides like mac & cheese and greens at affordable prices."},
-            {"name":"Dixie Chicken (W Oak St)","address":"1785 W Oak St, Louisville, KY 40210","lat":38.2375459,"lng":-85.7863856,"description":"West Louisville fried chicken spot serving crispy, flavorful baked and fried chicken with Southern sides. Known for home-cooked style at great prices."},
-            {"name":"Eat at The Spot","address":"865 S Dixie Blvd, Radcliff, KY 40160","lat":37.8297114,"lng":-85.9302105,"description":"The only authentic Jamaican restaurant near Ft. Knox. Famous for tender oxtail, jerk chicken, curry goat, and traditional Caribbean sides."},
-            {"name":"El Taco Ranchero","address":"5015 Poplar Level Rd, Louisville, KY 40219","lat":38.1659309,"lng":-85.6802271,"description":"Authentic Mexican taqueria serving traditional tacos, burritos, tortas, and Mexican specialties with homemade salsas and fresh ingredients."},
-            {"name":"Emilio's Taqueria","address":"9218 Blue Lick Rd, Louisville, KY 40229","lat":38.114471,"lng":-85.6908421,"description":"Family-owned Mexican taqueria offering authentic tacos, quesadillas, burritos, and traditional Mexican dishes made with fresh ingredients."},
-            {"name":"FABD Smokehouse","address":"3204 Frankfort Ave, Louisville, KY 40206","lat":38.2540842,"lng":-85.6749436,"description":"Frankfort Avenue dive bar with barrel smokers out front. Melt-in-your-mouth brisket, tender pulled pork, and ribs with the perfect sweet and spicy balance."},
-            {"name":"Family Ties Restaurant","address":"1030 Cecil Ave, Louisville, KY 40211","lat":38.244452,"lng":-85.8214666,"description":"Family-owned West Louisville spot serving fresh BBQ, rib tips, burgers, and Southern soul food. Community-focused with affordable prices."},
-            {"name":"Fort Royal Caribbean Restaurant","address":"6918 Southside Dr, Louisville, KY 40214","lat":38.1566672,"lng":-85.764972,"description":"Authentic Haitian cuisine featuring fried pork (griyo), fried chicken, goat dishes, and fresh plantains. A taste of the Caribbean in Louisville."},
-            {"name":"Franco's Restaurant & Catering","address":"3300 Dixie Hwy, Louisville, KY 40216","lat":38.166334,"lng":-85.8297254,"description":"Cafeteria-style Southern soul food from the former owners of Jay's Cafeteria. Down-home cooking at family-friendly prices on Dixie Highway."},
-            {"name":"Gorilla Bob's Grub Shack","address":"8503 Terry Rd, Louisville, KY 40258","lat":38.1510989,"lng":-85.869621,"description":"Roadside shack famous for the 'Best Hot Brown in the Ville.' Philly cheesesteaks, Cubans, Reubens, and indulgent 'ghetto fries' with all the toppings."},
-            {"name":"Guatelinda Taqueria #3","address":"8603 Citadel Way, Louisville, KY 40220","lat":38.2165,"lng":-85.556,"description":"Guatemalan and Mexican taqueria serving authentic Central American dishes including pupusas, tacos, and traditional Guatemalan specialties."},
-            {"name":"Hilltop Chicken","address":"1209 W Hill St, Louisville, KY 40210","lat":38.2276743,"lng":-85.7755964,"description":"Neighborhood fried chicken spot serving crispy, flavorful chicken and classic Southern sides in a casual, family-friendly atmosphere."},
-            {"name":"Hokkaido Ramen & Sushi (New Cut)","address":"5207 New Cut Rd, Louisville, KY 40214","lat":38.1609904,"lng":-85.7784793,"description":"Japanese eatery offering authentic ramen with rich broth, fresh sushi, deep-fried rolls, and refreshing bubble tea. 4.8 star rating."},
-            {"name":"Hokkaido Ramen & Sushi (Kenwood)","address":"818 W Kenwood Dr, Louisville, KY 40214","lat":38.1625629,"lng":-85.7887015,"description":"Second location serving the same beloved Japanese ramen, fresh sushi, and boba drinks in a cozy setting with speedy service."},
-            {"name":"Imanka 2 Somali Restaurant","address":"5318 S 3rd St, Louisville, KY 40214","lat":38.17326,"lng":-85.7698689,"description":"Authentic Somali restaurant offering goat, lamb, chicken suqaar, rice dishes, and traditional Somali cuisine with friendly service."},
-            {"name":"Imanka Somali Restaurant","address":"737 S 8th St, Louisville, KY 40203","lat":38.2453965,"lng":-85.766124,"description":"Hidden gem inside Somali Mall serving authentic dishes like beef and chicken suqaar, fried tilapia, lentil soup, and fresh sambusas."},
-            {"name":"JJ Grill Mediterranean","address":"3741 Pamela Rae Dr, Louisville, KY 40241","lat":38.3013424,"lng":-85.5816604,"description":"Family-owned Mediterranean grill serving kofta kabab, shawarma, gyro, hummus, and baba ganouj. All food made from scratch with fresh ingredients."},
-            {"name":"Jin Doshirak","address":"211 S 5th St, Louisville, KY 40202","lat":38.2534032,"lng":-85.7582596,"description":"Downtown Korean 'lunch box' restaurant serving authentic Korean dishes like bulgogi and kimbap alongside Japanese sushi. Biggest portions in the city."},
-            {"name":"John O'Bryan's Tavern","address":"4123 Flintlock Dr, Louisville, KY 40216","lat":38.1686679,"lng":-85.8381389,"description":"Family-owned tavern since 1988 famous for some of the best fried fish sandwiches in Louisville. Cash only, loyal local following."},
-            {"name":"Kathmandu Kitchen & Bar","address":"3825 Bardstown Rd, Ste 108, Louisville, KY 40218","lat":38.196,"lng":-85.6537,"description":"Nepali and Indian fusion restaurant with 4.7 rating. MoMo dumplings, Chicken Tikka, biryani, and customizable spice levels. Best in Louisville."},
-            {"name":"Ken Tex BBQ","address":"1163 Mt Eden Rd, Shelbyville, KY 40065","lat":38.1779682,"lng":-85.1916595,"description":"Texas-style BBQ institution since 1984. Rotisserie pit hickory-smoked meats including tender beef brisket. Worth the drive to Shelbyville."},
-            {"name":"Kiwami Ramen Bar","address":"1700 Bardstown Rd, Louisville, KY 40205","lat":38.2291058,"lng":-85.7178379,"description":"Highlands ramen bar from Tucson serving 'ultimate' ramen with long-simmered pork broth, poke bowls, and Japanese appetizers. Women and Asian-owned."},
-            {"name":"Koko & Rae Caribbean Kitchen","address":"1511 Bardstown Rd, Louisville, KY 40205","lat":38.2349295,"lng":-85.7209656,"description":"Highlands Caribbean restaurant serving traditional Jamaican dishes like jerk chicken, oxtail, curry goat, and creative fusion items like Jerk Chicken and Waffles."},
-            {"name":"Kwetu African Cuisine","address":"1725 Berry Blvd, Louisville, KY 40215","lat":38.2049691,"lng":-85.7777939,"description":"Family-owned Congolese/Ugandan restaurant. Tender Mbuzi Mchuzi (goat stew), jollof rice, fried plantains, and refreshing Bissap juice. Homey atmosphere."},
-            {"name":"La Cabanita Mexican Grill","address":"4900 Poplar Level Rd, Louisville, KY 40219","lat":38.1681168,"lng":-85.681232,"description":"Family-friendly Mexican grill serving authentic tacos, burritos, enchiladas, and traditional Mexican favorites with fresh ingredients."},
-            {"name":"La Catrina (New Albany)","address":"202 E Elm St, New Albany, IN 47150","lat":38.2879181,"lng":-85.8193259,"description":"Trendy downtown New Albany spot serving authentic shareable Mexican dishes, house-made cocktail mixers, and seasonal menus since 2018."},
-            {"name":"La Catrina (Jeffersonville)","address":"125 W Chestnut St, Jeffersonville, IN 47130","lat":38.2881073,"lng":-85.7383306,"description":"Sister location in Jeffersonville offering the same authentic Mexican flavors, craft margaritas, and vibrant atmosphere as the New Albany original."},
-            {"name":"La Guanaquita (E Broadway)","address":"600 E Broadway, Louisville, KY 40202","lat":38.2462633,"lng":-85.7476621,"description":"Smoketown location of beloved Salvadoran restaurant since 2014. Authentic pupusas, baleadas, carne asada, and Honduran specialties at great prices."},
-            {"name":"La Guanaquita (Taylor Blvd)","address":"4231 Taylor Blvd, Louisville, KY 40215","lat":38.18536,"lng":-85.7794282,"description":"Original location serving authentic Salvadoran cuisine. Famous for handmade pupusas, savory taquitos, and generous portions in a warm, welcoming setting."},
-            {"name":"La Palma Cuban Restaurant","address":"5614 Preston Hwy, Louisville, KY 40213","lat":38.1766313,"lng":-85.6982188,"description":"Hidden gem serving authentic Cuban cuisine including the best ropa vieja in town, Cuban sandwiches, yuca with mojo, and sweet fried plantains."},
-            {"name":"Lebrang Food Mart","address":"175 Market St, Charlestown, IN 47111","lat":38.4527618,"lng":-85.6710877,"description":"Small-town grocery and deli in Charlestown, Indiana serving local favorites, fresh-made food, and convenience items."},
-            {"name":"Lindsay's Kitchen","address":"5300 Cane Run Rd, Louisville, KY 40258","lat":38.1482096,"lng":-85.8531424,"description":"Hidden Louisville gem serving breakfast all day, country fried steak, and home-style cooking in a spacious cabin-like setting. Cracker Barrel vibes."},
-            {"name":"Los Hermanos Catrachos","address":"4106 Taylor Blvd, Louisville, KY 40215","lat":38.1876979,"lng":-85.7789932,"description":"Authentic Honduran restaurant serving baleadas, pupusas, tajadas, and traditional Central American dishes with warm hospitality."},
-            {"name":"Louisville Smokers BBQ","address":"1500 W Oak St, Louisville, KY 40210","lat":38.2378403,"lng":-85.7824169,"description":"Slow-smoked Southern BBQ near Central Park. Famous for succulent rib tips, smoked chicken wings, and fan-favorite pineapple cole slaw."},
-            {"name":"Mack Bros BBQ","address":"2700 1/2 Rockford Ln, Louisville, KY 40216","lat":38.1867269,"lng":-85.8237426,"description":"Black-owned family BBQ serving some of Louisville's best ribs and rib tips so good they don't need sauce. Famous cornbread salad and creamy mac & cheese."},
-            {"name":"Mammy's Kitchen & Bar","address":"116 W Stephen Foster Ave, Bardstown, KY 40004","lat":37.8101582,"lng":-85.4678188,"description":"Downtown Bardstown institution. Named 'Best Of' for 14 years. Southern comfort food, 140+ bourbons, live music Fridays, and patio dining."},
-            {"name":"Mashallah African Restaurant","address":"4109 Bardstown Rd, Ste 104, Louisville, KY 40218","lat":38.1924,"lng":-85.6463,"description":"West African restaurant since 2000 with authentic decor. Best jollof rice in town, egusi soup, spinach palasas, and mafeh (peanut butter soup)."},
-            {"name":"Mike Linnig's Restaurant","address":"9308 Cane Run Rd, Louisville, KY 40258","lat":38.0936166,"lng":-85.8831685,"description":"Legendary Louisville seafood institution since 1925, now in 101st season. Massive fried fish platters, frog legs, turtle soup, and famous onion rings."},
-            {"name":"Mirage Mediterranean (Preston)","address":"4100 Preston Hwy, Louisville, KY 40213","lat":38.1979553,"lng":-85.7142188,"description":"Family-owned Mediterranean restaurant since 2011. Named best falafel in Louisville. Gyros, shawarma, kebabs, and generous portions near the airport."},
-            {"name":"Mirage Mediterranean Express","address":"4000 Dutchmans Ln, Louisville, KY 40207","lat":38.2508903,"lng":-85.6480065,"description":"Express location of beloved Mirage Mediterranean serving the same award-winning falafel, shawarma, and kebabs with quick, friendly service."},
-            {"name":"Otter Creek Tavern","address":"6860 Flaherty Rd, Vine Grove, KY 40175","lat":37.8107,"lng":-85.9817,"description":"Countryside tavern near Ft. Knox serving cold beer, pub fare, and American comfort food in a relaxed, rural atmosphere."},
-            {"name":"Restaurant Guatelinda","address":"5049 Poplar Level Rd, Louisville, KY 40219","lat":38.1654568,"lng":-85.6795832,"description":"Guatemalan and Mexican restaurant serving authentic Central American dishes including pupusas, tacos, tamales, and traditional Guatemalan specialties."},
-            {"name":"Shalimar Restaurant","address":"1850 S Hurstbourne Pkwy, Ste 125, Louisville, KY 40220","lat":38.2217,"lng":-85.5836,"description":"Established 1999, serving authentic Indian and Pakistani cuisine for 25+ years. Butter chicken, biryani, lamb curry, and halal options."},
-            {"name":"Shawarma Guys","address":"5401 Indian Oaks Cir, Louisville, KY 40219","lat":38.1579399,"lng":-85.6667867,"description":"Popular food truck at Marathon gas station open until 2am. Delicious chicken and steak shawarma sandwiches and bowls at great prices."},
-            {"name":"Sichuan House","address":"7309 Preston Hwy, Louisville, KY 40219","lat":38.1465679,"lng":-85.6873127,"description":"Authentic Szechuan Chinese restaurant with dual menu. Spicy mapo tofu, dan dan noodles, cumin lamb, and traditional dishes alongside American-Chinese favorites."},
-            {"name":"Sissy's Tacos","address":"580 N Bardstown Rd, Ste 3, Mount Washington, KY 40047","lat":38.0521,"lng":-85.5472,"description":"Mount Washington taqueria serving authentic Mexican tacos, burritos, and traditional dishes with fresh ingredients and homemade salsas."},
-            {"name":"Soulful Choices","address":"4532 W Broadway, Louisville, KY 40211","lat":38.2272989,"lng":-85.8159929,"description":"Black-owned West End soul food spot since 2018. Fried fish, chicken, pork chops, and the signature Soul Burger topped with mac & cheese."},
-            {"name":"Stevie J's Barbecue","address":"1831 W Jefferson St, Louisville, KY 40203","lat":38.2475858,"lng":-85.7814082,"description":"Black-owned BBQ joint serving smoky ribs, pulled pork, brisket, and homemade sides like mac & cheese, baked beans, and cornbread."},
-            {"name":"Sweet Havana","address":"5510 Fern Valley Rd, Ste 101, Louisville, KY 40228","lat":38.1552,"lng":-85.658,"description":"Family-owned Cuban bakery and restaurant since 2021. Famous Cuban sandwiches, ropa vieja, lechon asado, and house-made tres leches, flan, and pastries."},
-            {"name":"Taco Choza","address":"3922 Westport Rd, Louisville, KY 40207","lat":38.2596055,"lng":-85.6523247,"description":"Latinx-owned Tex-Mex spot since 2018 known for birria tacos, overstuffed burritos, and handcrafted margaritas. Patio seating and friendly service."},
-            {"name":"Tacolandia","address":"5400 Preston Hwy, Louisville, KY 40213","lat":38.1789163,"lng":-85.6994476,"description":"Louisville's newest authentic Mexican restaurant (2024) with 50+ years of hospitality expertise. Tacos, burritos, margaritas, and weekend whole grilled chicken."},
-            {"name":"Tacos El Tio Martin","address":"5101 S 3rd St, Louisville, KY 40214","lat":38.1762609,"lng":-85.7705283,"description":"Authentic Mexican taqueria serving traditional street tacos, tortas, quesadillas, and Mexican favorites with fresh, homemade ingredients."},
-            {"name":"Tacos Guerra","address":"8601 National Turnpike, Louisville, KY 40118","lat":38.1119234,"lng":-85.7841598,"description":"Authentic Mexican taqueria offering traditional tacos, burritos, and Mexican street food with bold flavors and generous portions."},
-            {"name":"Tacos Juanito","address":"5601 Preston Hwy, Louisville, KY 40219","lat":38.1766313,"lng":-85.6982188,"description":"Family-run Mexican restaurant serving authentic tacos, burritos, tortas, and traditional Mexican dishes made fresh daily."},
-            {"name":"Taqueria El Mexicano","address":"7611 Preston Hwy, Louisville, KY 40219","lat":38.1414659,"lng":-85.6864258,"description":"Traditional Mexican taqueria offering authentic tacos, quesadillas, tortas, and Mexican specialties with homemade salsas and fresh ingredients."},
-            {"name":"Taqueria El Titi","address":"8219 Minor Ln, Louisville, KY 40219","lat":38.1263,"lng":-85.7083,"description":"Local Mexican taqueria serving authentic street-style tacos, burritos, and traditional Mexican dishes in a casual setting."},
-            {"name":"Taqueria Los Gorditos","address":"2017 Brownsboro Rd, Louisville, KY 40206","lat":38.2631892,"lng":-85.7137091,"description":"Open until 2am daily. Fresh tacos, tortas, sopes, large burritos, and traditional Mexican dishes including caldo de res and costillitas in green sauce."},
-            {"name":"Taquero Mucho","address":"5700 Outer Loop, Louisville, KY 40219","lat":38.1306098,"lng":-85.6985093,"description":"Mexican restaurant and taqueria serving authentic tacos, burritos, quesadillas, and traditional Mexican favorites with bold, fresh flavors."},
-            {"name":"The Charcoal Restaurant","address":"2805 N Hurstbourne Pkwy, Ste 100, Louisville, KY 40223","lat":38.2861,"lng":-85.5701,"description":"Authentic Palestinian charcoal-grilled chicken, falafel, shawarma, and hummus. 4.9-star rating, halal, and ranked #2 on Louisville's top places to eat."},
-            {"name":"The House of Marigold","address":"10310 Shelbyville Rd, Louisville, KY 40223","lat":38.2576556,"lng":-85.5445291,"description":"Beloved New American brunch spot with farm-to-table rotating menu. Elevated breakfast and lunch with locally-sourced ingredients and house-made pastries."},
-            {"name":"Tikka Tacos","address":"3311 Preston Hwy, Louisville, KY 40213","lat":38.2069459,"lng":-85.7200063,"description":"Unique Indo-Mexican fusion serving Bollywood tacos with chicken tikka in paratha bread, lamb tacos, samosas, and butter chicken. Mind-blowing flavor combinations."},
-            {"name":"Tim Page's Corner Store","address":"2922 Taylor Blvd, Louisville, KY 40208","lat":38.2054166,"lng":-85.7683538,"description":"Neighborhood corner store and deli serving fresh sandwiches, snacks, and daily specials to the local community."},
-            {"name":"Tomo Japanese Ramen & Sushi","address":"5023 Mud Ln, Ste 160, Louisville, KY 40229","lat":38.0919,"lng":-85.6718,"description":"Japanese restaurant serving fresh daily sushi, authentic ramen, hibachi, and boba tea. 4.6 rating with commitment to fresh, natural ingredients."},
-            {"name":"Veronica's Mexican (Poplar Level)","address":"5044 Poplar Level Rd, Louisville, KY 40219","lat":38.165547,"lng":-85.679705,"description":"Family-owned Mexican restaurant serving authentic tacos, enchiladas, fajitas, and traditional Mexican favorites with fresh ingredients."},
-            {"name":"Veronica's Mexican (Preston)","address":"11470 Preston Hwy, Louisville, KY 40229","lat":38.0722831,"lng":-85.6693298,"description":"Second location of beloved family Mexican restaurant offering the same authentic dishes, fresh salsas, and generous portions."},
-            {"name":"Wagner's Village Inn","address":"22171 Main St, Oldenburg, IN 47036","lat":39.3440508,"lng":-85.207688,"description":"James Beard Award-winning country inn since 1968 in German-heritage Oldenburg. Famous for pan-fried chicken in hog fat and homemade desserts."},
-            {"name":"Zamzam Restaurant","address":"1808 Berry Blvd, Louisville, KY 40215","lat":38.2037813,"lng":-85.7766688,"description":"Somali restaurant with perfect 100 health score serving authentic dishes including mandi rice, grilled salmon, sambusas, and Somali-style pasta."}
+            {"name":"A Toda Madre","address":"8200 Preston Hwy, Louisville, KY 40219","lat":38.1332639,"lng":-85.6846969,"description":"Authentic Mexican street food featuring hand-made tortillas, birria tacos, and giant shareable machetes. Known for generous portions and bold flavors.","cuisine":"Mexican"},
+            {"name":"Abyssinia Ethiopian","address":"554 S 5th St, Louisville, KY 40202","lat":38.2495279,"lng":-85.7596494,"description":"Downtown Ethiopian restaurant serving authentic dishes like Doro Wot and Sambusa. Features a traditional coffee ceremony and vegetarian options.","cuisine":"African"},
+            {"name":"African Best Restaurant","address":"7325 St Andrews Church Rd, Louisville, KY 40214","lat":38.1539235,"lng":-85.802952,"description":"Hidden gem serving authentic West African cuisine including Jollof rice, Egusi soup with fufu, and grilled tilapia with African seasoning.","cuisine":"African"},
+            {"name":"Al-Sham Market","address":"3819 Bardstown Rd, Ste B, Louisville, KY 40218","lat":38.1965,"lng":-85.6544,"description":"Middle Eastern market and deli known for having the best falafel in Kentucky. Fresh shawarma sandwiches, grilled kabobs, and halal groceries.","cuisine":"Middle Eastern"},
+            {"name":"Alwatan Bakery","address":"3711 Klondike Ln, Louisville, KY 40218","lat":38.2106445,"lng":-85.6396965,"description":"Beloved Middle Eastern bakery since 1992 serving fresh pita bread, falafel, shish kebabs, and authentic Palestinian sweets including homemade baklawa.","cuisine":"Middle Eastern"},
+            {"name":"B&N Food Market","address":"5945 Elmburg Rd, Bagdad, KY 40003","lat":38.2618986,"lng":-85.0581353,"description":"Country store and market in rural Shelby County offering local goods, deli items, and Southern staples in a small-town atmosphere.","cuisine":"American"},
+            {"name":"Banaadir Cafe and Grill","address":"5600 S 3rd St, Louisville, KY 40214","lat":38.1691433,"lng":-85.768872,"description":"Authentic Somali restaurant with 4.7 rating. Tender goat and lamb dishes, beef suqaar, sambusas, and traditional shaah tea in a family-friendly setting.","cuisine":"African"},
+            {"name":"Bellissimo","address":"2217 Steier Ln, Louisville, KY 40218","lat":38.1979461,"lng":-85.6569047,"description":"Unique Italian-Afghan fusion restaurant serving fresh pasta, authentic Afghan kebabs, and Persian dishes. Louisville's first Afghan restaurant. All halal meat.","cuisine":"Middle Eastern"},
+            {"name":"Big Hopp's Southern Eatery","address":"2913 Dixie Hwy, Louisville, KY 40216","lat":38.166334,"lng":-85.8297254,"description":"Southern food with a New Orleans flare. Famous for fried catfish, smothered pork chops, collard greens, and sweet potato casserole.","cuisine":"Soul Food"},
+            {"name":"Big Momma's Soul Food Kitchen","address":"1812 W Muhammad Ali Blvd, Louisville, KY 40203","lat":38.2536055,"lng":-85.7814802,"description":"West Louisville soul food institution run by 'Big Momma' Jessie Green. Famous for baked spaghetti, smothered pork chops, and huge portions.","cuisine":"Soul Food"},
+            {"name":"Bodega Mi Sueno","address":"3646 Mall Rd, Louisville, KY 40218","lat":38.2106,"lng":-85.651,"description":"Latin American grocery and restaurant offering authentic Hispanic products, fresh-made dishes, and traditional flavors from Central and South America.","cuisine":"Latin"},
+            {"name":"Carriss' Grocery","address":"7 Southville Pike, Shelbyville, KY 40065","lat":38.11,"lng":-85.1832,"description":"Small-town country grocery store in Shelbyville serving local community favorites, deli sandwiches, and Southern comfort staples.","cuisine":"American"},
+            {"name":"Dalat's Banh Mi and Boba","address":"6915 Southside Dr, Louisville, KY 40214","lat":38.1567326,"lng":-85.7636532,"description":"Vietnamese cafe since 2009 offering signature banh mi, pho, bun bo Hue, boba tea, and French pastries. Named after the charming city of Da Lat.","cuisine":"Asian"},
+            {"name":"District 6 Vietnamese Gastropub","address":"3930 Shelbyville Rd, Louisville, KY 40207","lat":38.2526332,"lng":-85.6539333,"description":"Modern Vietnamese gastropub blending traditional and contemporary dishes with locally-sourced ingredients. Known for pork belly, pho, and craft cocktails.","cuisine":"Asian"},
+            {"name":"Dixie Chicken (Dixie Hwy)","address":"3947 Dixie Hwy, Louisville, KY 40216","lat":38.166334,"lng":-85.8297254,"description":"Local favorite for crispy Southern fried chicken, generous portions, and home-cooked sides like mac & cheese and greens at affordable prices.","cuisine":"Soul Food"},
+            {"name":"Dixie Chicken (W Oak St)","address":"1785 W Oak St, Louisville, KY 40210","lat":38.2375459,"lng":-85.7863856,"description":"West Louisville fried chicken spot serving crispy, flavorful baked and fried chicken with Southern sides. Known for home-cooked style at great prices.","cuisine":"Soul Food"},
+            {"name":"Eat at The Spot","address":"865 S Dixie Blvd, Radcliff, KY 40160","lat":37.8297114,"lng":-85.9302105,"description":"The only authentic Jamaican restaurant near Ft. Knox. Famous for tender oxtail, jerk chicken, curry goat, and traditional Caribbean sides.","cuisine":"Caribbean"},
+            {"name":"El Taco Ranchero","address":"5015 Poplar Level Rd, Louisville, KY 40219","lat":38.1659309,"lng":-85.6802271,"description":"Authentic Mexican taqueria serving traditional tacos, burritos, tortas, and Mexican specialties with homemade salsas and fresh ingredients.","cuisine":"Mexican"},
+            {"name":"Emilio's Taqueria","address":"9218 Blue Lick Rd, Louisville, KY 40229","lat":38.114471,"lng":-85.6908421,"description":"Family-owned Mexican taqueria offering authentic tacos, quesadillas, burritos, and traditional Mexican dishes made with fresh ingredients.","cuisine":"Mexican"},
+            {"name":"FABD Smokehouse","address":"3204 Frankfort Ave, Louisville, KY 40206","lat":38.2540842,"lng":-85.6749436,"description":"Frankfort Avenue dive bar with barrel smokers out front. Melt-in-your-mouth brisket, tender pulled pork, and ribs with the perfect sweet and spicy balance.","cuisine":"BBQ"},
+            {"name":"Family Ties Restaurant","address":"1030 Cecil Ave, Louisville, KY 40211","lat":38.244452,"lng":-85.8214666,"description":"Family-owned West Louisville spot serving fresh BBQ, rib tips, burgers, and Southern soul food. Community-focused with affordable prices.","cuisine":"BBQ"},
+            {"name":"Fort Royal Caribbean Restaurant","address":"6918 Southside Dr, Louisville, KY 40214","lat":38.1566672,"lng":-85.764972,"description":"Authentic Haitian cuisine featuring fried pork (griyo), fried chicken, goat dishes, and fresh plantains. A taste of the Caribbean in Louisville.","cuisine":"Caribbean"},
+            {"name":"Franco's Restaurant & Catering","address":"3300 Dixie Hwy, Louisville, KY 40216","lat":38.166334,"lng":-85.8297254,"description":"Cafeteria-style Southern soul food from the former owners of Jay's Cafeteria. Down-home cooking at family-friendly prices on Dixie Highway.","cuisine":"Soul Food"},
+            {"name":"Gorilla Bob's Grub Shack","address":"8503 Terry Rd, Louisville, KY 40258","lat":38.1510989,"lng":-85.869621,"description":"Roadside shack famous for the 'Best Hot Brown in the Ville.' Philly cheesesteaks, Cubans, Reubens, and indulgent 'ghetto fries' with all the toppings.","cuisine":"American"},
+            {"name":"Guatelinda Taqueria #3","address":"8603 Citadel Way, Louisville, KY 40220","lat":38.2165,"lng":-85.556,"description":"Guatemalan and Mexican taqueria serving authentic Central American dishes including pupusas, tacos, and traditional Guatemalan specialties.","cuisine":"Latin"},
+            {"name":"Hilltop Chicken","address":"1209 W Hill St, Louisville, KY 40210","lat":38.2276743,"lng":-85.7755964,"description":"Neighborhood fried chicken spot serving crispy, flavorful chicken and classic Southern sides in a casual, family-friendly atmosphere.","cuisine":"Soul Food"},
+            {"name":"Hokkaido Ramen & Sushi (New Cut)","address":"5207 New Cut Rd, Louisville, KY 40214","lat":38.1609904,"lng":-85.7784793,"description":"Japanese eatery offering authentic ramen with rich broth, fresh sushi, deep-fried rolls, and refreshing bubble tea. 4.8 star rating.","cuisine":"Asian"},
+            {"name":"Hokkaido Ramen & Sushi (Kenwood)","address":"818 W Kenwood Dr, Louisville, KY 40214","lat":38.1625629,"lng":-85.7887015,"description":"Second location serving the same beloved Japanese ramen, fresh sushi, and boba drinks in a cozy setting with speedy service.","cuisine":"Asian"},
+            {"name":"Imanka 2 Somali Restaurant","address":"5318 S 3rd St, Louisville, KY 40214","lat":38.17326,"lng":-85.7698689,"description":"Authentic Somali restaurant offering goat, lamb, chicken suqaar, rice dishes, and traditional Somali cuisine with friendly service.","cuisine":"African"},
+            {"name":"Imanka Somali Restaurant","address":"737 S 8th St, Louisville, KY 40203","lat":38.2453965,"lng":-85.766124,"description":"Hidden gem inside Somali Mall serving authentic dishes like beef and chicken suqaar, fried tilapia, lentil soup, and fresh sambusas.","cuisine":"African"},
+            {"name":"JJ Grill Mediterranean","address":"3741 Pamela Rae Dr, Louisville, KY 40241","lat":38.3013424,"lng":-85.5816604,"description":"Family-owned Mediterranean grill serving kofta kabab, shawarma, gyro, hummus, and baba ganouj. All food made from scratch with fresh ingredients.","cuisine":"Middle Eastern"},
+            {"name":"Jin Doshirak","address":"211 S 5th St, Louisville, KY 40202","lat":38.2534032,"lng":-85.7582596,"description":"Downtown Korean 'lunch box' restaurant serving authentic Korean dishes like bulgogi and kimbap alongside Japanese sushi. Biggest portions in the city.","cuisine":"Asian"},
+            {"name":"John O'Bryan's Tavern","address":"4123 Flintlock Dr, Louisville, KY 40216","lat":38.1686679,"lng":-85.8381389,"description":"Family-owned tavern since 1988 famous for some of the best fried fish sandwiches in Louisville. Cash only, loyal local following.","cuisine":"American"},
+            {"name":"Kathmandu Kitchen & Bar","address":"3825 Bardstown Rd, Ste 108, Louisville, KY 40218","lat":38.196,"lng":-85.6537,"description":"Nepali and Indian fusion restaurant with 4.7 rating. MoMo dumplings, Chicken Tikka, biryani, and customizable spice levels. Best in Louisville.","cuisine":"Asian"},
+            {"name":"Ken Tex BBQ","address":"1163 Mt Eden Rd, Shelbyville, KY 40065","lat":38.1779682,"lng":-85.1916595,"description":"Texas-style BBQ institution since 1984. Rotisserie pit hickory-smoked meats including tender beef brisket. Worth the drive to Shelbyville.","cuisine":"BBQ"},
+            {"name":"Kiwami Ramen Bar","address":"1700 Bardstown Rd, Louisville, KY 40205","lat":38.2291058,"lng":-85.7178379,"description":"Highlands ramen bar from Tucson serving 'ultimate' ramen with long-simmered pork broth, poke bowls, and Japanese appetizers. Women and Asian-owned.","cuisine":"Asian"},
+            {"name":"Koko & Rae Caribbean Kitchen","address":"1511 Bardstown Rd, Louisville, KY 40205","lat":38.2349295,"lng":-85.7209656,"description":"Highlands Caribbean restaurant serving traditional Jamaican dishes like jerk chicken, oxtail, curry goat, and creative fusion items like Jerk Chicken and Waffles.","cuisine":"Caribbean"},
+            {"name":"Kwetu African Cuisine","address":"1725 Berry Blvd, Louisville, KY 40215","lat":38.2049691,"lng":-85.7777939,"description":"Family-owned Congolese/Ugandan restaurant. Tender Mbuzi Mchuzi (goat stew), jollof rice, fried plantains, and refreshing Bissap juice. Homey atmosphere.","cuisine":"African"},
+            {"name":"La Cabanita Mexican Grill","address":"4900 Poplar Level Rd, Louisville, KY 40219","lat":38.1681168,"lng":-85.681232,"description":"Family-friendly Mexican grill serving authentic tacos, burritos, enchiladas, and traditional Mexican favorites with fresh ingredients.","cuisine":"Mexican"},
+            {"name":"La Catrina (New Albany)","address":"202 E Elm St, New Albany, IN 47150","lat":38.2879181,"lng":-85.8193259,"description":"Trendy downtown New Albany spot serving authentic shareable Mexican dishes, house-made cocktail mixers, and seasonal menus since 2018.","cuisine":"Mexican"},
+            {"name":"La Catrina (Jeffersonville)","address":"125 W Chestnut St, Jeffersonville, IN 47130","lat":38.2881073,"lng":-85.7383306,"description":"Sister location in Jeffersonville offering the same authentic Mexican flavors, craft margaritas, and vibrant atmosphere as the New Albany original.","cuisine":"Mexican"},
+            {"name":"La Guanaquita (E Broadway)","address":"600 E Broadway, Louisville, KY 40202","lat":38.2462633,"lng":-85.7476621,"description":"Smoketown location of beloved Salvadoran restaurant since 2014. Authentic pupusas, baleadas, carne asada, and Honduran specialties at great prices.","cuisine":"Latin"},
+            {"name":"La Guanaquita (Taylor Blvd)","address":"4231 Taylor Blvd, Louisville, KY 40215","lat":38.18536,"lng":-85.7794282,"description":"Original location serving authentic Salvadoran cuisine. Famous for handmade pupusas, savory taquitos, and generous portions in a warm, welcoming setting.","cuisine":"Latin"},
+            {"name":"La Palma Cuban Restaurant","address":"5614 Preston Hwy, Louisville, KY 40213","lat":38.1766313,"lng":-85.6982188,"description":"Hidden gem serving authentic Cuban cuisine including the best ropa vieja in town, Cuban sandwiches, yuca with mojo, and sweet fried plantains.","cuisine":"Latin"},
+            {"name":"Lebrang Food Mart","address":"175 Market St, Charlestown, IN 47111","lat":38.4527618,"lng":-85.6710877,"description":"Small-town grocery and deli in Charlestown, Indiana serving local favorites, fresh-made food, and convenience items.","cuisine":"American"},
+            {"name":"Lindsay's Kitchen","address":"5300 Cane Run Rd, Louisville, KY 40258","lat":38.1482096,"lng":-85.8531424,"description":"Hidden Louisville gem serving breakfast all day, country fried steak, and home-style cooking in a spacious cabin-like setting. Cracker Barrel vibes.","cuisine":"American"},
+            {"name":"Los Hermanos Catrachos","address":"4106 Taylor Blvd, Louisville, KY 40215","lat":38.1876979,"lng":-85.7789932,"description":"Authentic Honduran restaurant serving baleadas, pupusas, tajadas, and traditional Central American dishes with warm hospitality.","cuisine":"Latin"},
+            {"name":"Louisville Smokers BBQ","address":"1500 W Oak St, Louisville, KY 40210","lat":38.2378403,"lng":-85.7824169,"description":"Slow-smoked Southern BBQ near Central Park. Famous for succulent rib tips, smoked chicken wings, and fan-favorite pineapple cole slaw.","cuisine":"BBQ"},
+            {"name":"Mack Bros BBQ","address":"2700 1/2 Rockford Ln, Louisville, KY 40216","lat":38.1867269,"lng":-85.8237426,"description":"Black-owned family BBQ serving some of Louisville's best ribs and rib tips so good they don't need sauce. Famous cornbread salad and creamy mac & cheese.","cuisine":"BBQ"},
+            {"name":"Mammy's Kitchen & Bar","address":"116 W Stephen Foster Ave, Bardstown, KY 40004","lat":37.8101582,"lng":-85.4678188,"description":"Downtown Bardstown institution. Named 'Best Of' for 14 years. Southern comfort food, 140+ bourbons, live music Fridays, and patio dining.","cuisine":"Soul Food"},
+            {"name":"Mashallah African Restaurant","address":"4109 Bardstown Rd, Ste 104, Louisville, KY 40218","lat":38.1924,"lng":-85.6463,"description":"West African restaurant since 2000 with authentic decor. Best jollof rice in town, egusi soup, spinach palasas, and mafeh (peanut butter soup).","cuisine":"African"},
+            {"name":"Mike Linnig's Restaurant","address":"9308 Cane Run Rd, Louisville, KY 40258","lat":38.0936166,"lng":-85.8831685,"description":"Legendary Louisville seafood institution since 1925, now in 101st season. Massive fried fish platters, frog legs, turtle soup, and famous onion rings.","cuisine":"American"},
+            {"name":"Mirage Mediterranean (Preston)","address":"4100 Preston Hwy, Louisville, KY 40213","lat":38.1979553,"lng":-85.7142188,"description":"Family-owned Mediterranean restaurant since 2011. Named best falafel in Louisville. Gyros, shawarma, kebabs, and generous portions near the airport.","cuisine":"Middle Eastern"},
+            {"name":"Mirage Mediterranean Express","address":"4000 Dutchmans Ln, Louisville, KY 40207","lat":38.2508903,"lng":-85.6480065,"description":"Express location of beloved Mirage Mediterranean serving the same award-winning falafel, shawarma, and kebabs with quick, friendly service.","cuisine":"Middle Eastern"},
+            {"name":"Otter Creek Tavern","address":"6860 Flaherty Rd, Vine Grove, KY 40175","lat":37.8107,"lng":-85.9817,"description":"Countryside tavern near Ft. Knox serving cold beer, pub fare, and American comfort food in a relaxed, rural atmosphere.","cuisine":"American"},
+            {"name":"Restaurant Guatelinda","address":"5049 Poplar Level Rd, Louisville, KY 40219","lat":38.1654568,"lng":-85.6795832,"description":"Guatemalan and Mexican restaurant serving authentic Central American dishes including pupusas, tacos, tamales, and traditional Guatemalan specialties.","cuisine":"Latin"},
+            {"name":"Shalimar Restaurant","address":"1850 S Hurstbourne Pkwy, Ste 125, Louisville, KY 40220","lat":38.2217,"lng":-85.5836,"description":"Established 1999, serving authentic Indian and Pakistani cuisine for 25+ years. Butter chicken, biryani, lamb curry, and halal options.","cuisine":"Asian"},
+            {"name":"Shawarma Guys","address":"5401 Indian Oaks Cir, Louisville, KY 40219","lat":38.1579399,"lng":-85.6667867,"description":"Popular food truck at Marathon gas station open until 2am. Delicious chicken and steak shawarma sandwiches and bowls at great prices.","cuisine":"Middle Eastern"},
+            {"name":"Sichuan House","address":"7309 Preston Hwy, Louisville, KY 40219","lat":38.1465679,"lng":-85.6873127,"description":"Authentic Szechuan Chinese restaurant with dual menu. Spicy mapo tofu, dan dan noodles, cumin lamb, and traditional dishes alongside American-Chinese favorites.","cuisine":"Asian"},
+            {"name":"Sissy's Tacos","address":"580 N Bardstown Rd, Ste 3, Mount Washington, KY 40047","lat":38.0521,"lng":-85.5472,"description":"Mount Washington taqueria serving authentic Mexican tacos, burritos, and traditional dishes with fresh ingredients and homemade salsas.","cuisine":"Mexican"},
+            {"name":"Soulful Choices","address":"4532 W Broadway, Louisville, KY 40211","lat":38.2272989,"lng":-85.8159929,"description":"Black-owned West End soul food spot since 2018. Fried fish, chicken, pork chops, and the signature Soul Burger topped with mac & cheese.","cuisine":"Soul Food"},
+            {"name":"Stevie J's Barbecue","address":"1831 W Jefferson St, Louisville, KY 40203","lat":38.2475858,"lng":-85.7814082,"description":"Black-owned BBQ joint serving smoky ribs, pulled pork, brisket, and homemade sides like mac & cheese, baked beans, and cornbread.","cuisine":"BBQ"},
+            {"name":"Sweet Havana","address":"5510 Fern Valley Rd, Ste 101, Louisville, KY 40228","lat":38.1552,"lng":-85.658,"description":"Family-owned Cuban bakery and restaurant since 2021. Famous Cuban sandwiches, ropa vieja, lechon asado, and house-made tres leches, flan, and pastries.","cuisine":"Latin"},
+            {"name":"Taco Choza","address":"3922 Westport Rd, Louisville, KY 40207","lat":38.2596055,"lng":-85.6523247,"description":"Latinx-owned Tex-Mex spot since 2018 known for birria tacos, overstuffed burritos, and handcrafted margaritas. Patio seating and friendly service.","cuisine":"Mexican"},
+            {"name":"Tacolandia","address":"5400 Preston Hwy, Louisville, KY 40213","lat":38.1789163,"lng":-85.6994476,"description":"Louisville's newest authentic Mexican restaurant (2024) with 50+ years of hospitality expertise. Tacos, burritos, margaritas, and weekend whole grilled chicken.","cuisine":"Mexican"},
+            {"name":"Tacos El Tio Martin","address":"5101 S 3rd St, Louisville, KY 40214","lat":38.1762609,"lng":-85.7705283,"description":"Authentic Mexican taqueria serving traditional street tacos, tortas, quesadillas, and Mexican favorites with fresh, homemade ingredients.","cuisine":"Mexican"},
+            {"name":"Tacos Guerra","address":"8601 National Turnpike, Louisville, KY 40118","lat":38.1119234,"lng":-85.7841598,"description":"Authentic Mexican taqueria offering traditional tacos, burritos, and Mexican street food with bold flavors and generous portions.","cuisine":"Mexican"},
+            {"name":"Tacos Juanito","address":"5601 Preston Hwy, Louisville, KY 40219","lat":38.1766313,"lng":-85.6982188,"description":"Family-run Mexican restaurant serving authentic tacos, burritos, tortas, and traditional Mexican dishes made fresh daily.","cuisine":"Mexican"},
+            {"name":"Taqueria El Mexicano","address":"7611 Preston Hwy, Louisville, KY 40219","lat":38.1414659,"lng":-85.6864258,"description":"Traditional Mexican taqueria offering authentic tacos, quesadillas, tortas, and Mexican specialties with homemade salsas and fresh ingredients.","cuisine":"Mexican"},
+            {"name":"Taqueria El Titi","address":"8219 Minor Ln, Louisville, KY 40219","lat":38.1263,"lng":-85.7083,"description":"Local Mexican taqueria serving authentic street-style tacos, burritos, and traditional Mexican dishes in a casual setting.","cuisine":"Mexican"},
+            {"name":"Taqueria Los Gorditos","address":"2017 Brownsboro Rd, Louisville, KY 40206","lat":38.2631892,"lng":-85.7137091,"description":"Open until 2am daily. Fresh tacos, tortas, sopes, large burritos, and traditional Mexican dishes including caldo de res and costillitas in green sauce.","cuisine":"Mexican"},
+            {"name":"Taquero Mucho","address":"5700 Outer Loop, Louisville, KY 40219","lat":38.1306098,"lng":-85.6985093,"description":"Mexican restaurant and taqueria serving authentic tacos, burritos, quesadillas, and traditional Mexican favorites with bold, fresh flavors.","cuisine":"Mexican"},
+            {"name":"The Charcoal Restaurant","address":"2805 N Hurstbourne Pkwy, Ste 100, Louisville, KY 40223","lat":38.2861,"lng":-85.5701,"description":"Authentic Palestinian charcoal-grilled chicken, falafel, shawarma, and hummus. 4.9-star rating, halal, and ranked #2 on Louisville's top places to eat.","cuisine":"Middle Eastern"},
+            {"name":"The House of Marigold","address":"10310 Shelbyville Rd, Louisville, KY 40223","lat":38.2576556,"lng":-85.5445291,"description":"Beloved New American brunch spot with farm-to-table rotating menu. Elevated breakfast and lunch with locally-sourced ingredients and house-made pastries.","cuisine":"American"},
+            {"name":"Tikka Tacos","address":"3311 Preston Hwy, Louisville, KY 40213","lat":38.2069459,"lng":-85.7200063,"description":"Unique Indo-Mexican fusion serving Bollywood tacos with chicken tikka in paratha bread, lamb tacos, samosas, and butter chicken. Mind-blowing flavor combinations.","cuisine":"Asian"},
+            {"name":"Tim Page's Corner Store","address":"2922 Taylor Blvd, Louisville, KY 40208","lat":38.2054166,"lng":-85.7683538,"description":"Neighborhood corner store and deli serving fresh sandwiches, snacks, and daily specials to the local community.","cuisine":"American"},
+            {"name":"Tomo Japanese Ramen & Sushi","address":"5023 Mud Ln, Ste 160, Louisville, KY 40229","lat":38.0919,"lng":-85.6718,"description":"Japanese restaurant serving fresh daily sushi, authentic ramen, hibachi, and boba tea. 4.6 rating with commitment to fresh, natural ingredients.","cuisine":"Asian"},
+            {"name":"Veronica's Mexican (Poplar Level)","address":"5044 Poplar Level Rd, Louisville, KY 40219","lat":38.165547,"lng":-85.679705,"description":"Family-owned Mexican restaurant serving authentic tacos, enchiladas, fajitas, and traditional Mexican favorites with fresh ingredients.","cuisine":"Mexican"},
+            {"name":"Veronica's Mexican (Preston)","address":"11470 Preston Hwy, Louisville, KY 40229","lat":38.0722831,"lng":-85.6693298,"description":"Second location of beloved family Mexican restaurant offering the same authentic dishes, fresh salsas, and generous portions.","cuisine":"Mexican"},
+            {"name":"Wagner's Village Inn","address":"22171 Main St, Oldenburg, IN 47036","lat":39.3440508,"lng":-85.207688,"description":"James Beard Award-winning country inn since 1968 in German-heritage Oldenburg. Famous for pan-fried chicken in hog fat and homemade desserts.","cuisine":"American"},
+            {"name":"Zamzam Restaurant","address":"1808 Berry Blvd, Louisville, KY 40215","lat":38.2037813,"lng":-85.7766688,"description":"Somali restaurant with perfect 100 health score serving authentic dishes including mandi rice, grilled salmon, sambusas, and Somali-style pasta.","cuisine":"African"}
         ];
+
+        // Cuisine categories for filter chips
+        const cuisineCategories = ['All', 'BBQ', 'Soul Food', 'Mexican', 'Latin', 'Caribbean', 'African', 'Middle Eastern', 'Asian', 'American'];
 
         // Sort alphabetically
         restaurants.sort((a, b) => a.name.localeCompare(b.name));
@@ -1199,7 +1257,8 @@
                 properties: {
                     name: r.name,
                     address: r.address,
-                    description: r.description
+                    description: r.description,
+                    cuisine: r.cuisine
                 }
             }))
         };
@@ -1505,6 +1564,49 @@
         let searchQuery = '';
         let searchFocusIndex = -1;
         let userLocation = null;
+        let selectedCuisine = 'All';
+
+        // Initialize filter chips
+        const filterChipsEl = document.getElementById('filterChips');
+        function renderFilterChips() {
+            filterChipsEl.innerHTML = cuisineCategories.map(cuisine => {
+                const count = cuisine === 'All'
+                    ? restaurants.length
+                    : restaurants.filter(r => r.cuisine === cuisine).length;
+                return `
+                    <button class="filter-chip${selectedCuisine === cuisine ? ' active' : ''}" data-cuisine="${cuisine}">
+                        ${cuisine}<span class="count">${count}</span>
+                    </button>
+                `;
+            }).join('');
+
+            // Add click handlers
+            filterChipsEl.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    selectedCuisine = chip.dataset.cuisine;
+                    renderFilterChips();
+                    renderList();
+                    updateMapMarkers();
+                    // Track filter change
+                    if (window.UncleAnalytics) UncleAnalytics.track('cuisine_filter', selectedCuisine);
+                });
+            });
+        }
+        renderFilterChips();
+
+        // Update map markers based on selected cuisine
+        function updateMapMarkers() {
+            if (!map.getLayer('restaurant-markers')) return;
+
+            if (selectedCuisine === 'All') {
+                map.setFilter('restaurant-markers', null);
+                map.setFilter('restaurant-markers-hover', null);
+            } else {
+                const filter = ['==', ['get', 'cuisine'], selectedCuisine];
+                map.setFilter('restaurant-markers', filter);
+                map.setFilter('restaurant-markers-hover', filter);
+            }
+        }
 
         // Get user's location
         function getUserLocation(callback) {
@@ -1708,6 +1810,11 @@
                     r.name.toLowerCase().includes(searchQuery) ||
                     r.address.toLowerCase().includes(searchQuery)
                 );
+            }
+
+            // Filter by cuisine
+            if (selectedCuisine !== 'All') {
+                list = list.filter(r => r.cuisine === selectedCuisine);
             }
 
             // Sort the list
