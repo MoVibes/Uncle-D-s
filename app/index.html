@@ -600,16 +600,23 @@
         }
 
         .sort-select {
-            padding: 10px 16px;
+            padding: 12px 16px;
             border: 2px solid var(--cream-dark);
             border-radius: var(--radius-md);
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 16px; /* Prevents iOS zoom on focus */
             font-weight: 500;
             background: white;
             color: var(--charcoal);
             cursor: pointer;
             transition: var(--transition-fast);
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A4A4A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            min-height: 44px; /* iOS recommended touch target */
         }
 
         .sort-select:focus {
@@ -1474,7 +1481,10 @@
         let userLocation = null;
 
         // Get user's location
-        async function getUserLocation(callback) {
+        function getUserLocation(callback) {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+
             if (!('geolocation' in navigator)) {
                 alert('Geolocation is not supported by your browser');
                 sortSelect.value = 'name';
@@ -1482,37 +1492,7 @@
                 return;
             }
 
-            // Check permission status first (if Permissions API is available)
-            if ('permissions' in navigator) {
-                try {
-                    const permission = await navigator.permissions.query({ name: 'geolocation' });
-
-                    if (permission.state === 'denied') {
-                        // Permission was previously denied - show instructions
-                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                        const isAndroid = /Android/.test(navigator.userAgent);
-
-                        let instructions = 'To sort by proximity, please enable location access:\n\n';
-                        if (isIOS) {
-                            instructions += '1. Open Settings\n2. Scroll to Safari (or your browser)\n3. Tap Location\n4. Select "Allow"';
-                        } else if (isAndroid) {
-                            instructions += '1. Tap the lock icon in the address bar\n2. Tap "Permissions"\n3. Enable Location';
-                        } else {
-                            instructions += '1. Click the lock icon in the address bar\n2. Find "Location" and set it to "Allow"\n3. Refresh the page';
-                        }
-
-                        alert(instructions);
-                        sortSelect.value = 'name';
-                        if (callback) callback(false);
-                        return;
-                    }
-                } catch (e) {
-                    // Permissions API not fully supported, continue with regular request
-                    console.log('Permissions API error:', e);
-                }
-            }
-
-            // Request location
+            // Request location directly (Permissions API not reliable on iOS)
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     userLocation = {
@@ -1523,22 +1503,30 @@
                     if (callback) callback(true);
                 },
                 (error) => {
-                    console.log('Geolocation error:', error.message);
+                    console.log('Geolocation error:', error.code, error.message);
                     userLocation = null;
 
+                    let message = '';
                     if (error.code === 1) {
-                        // User denied the prompt
-                        alert('Location access is needed to sort by proximity. Please try again and tap "Allow" when prompted.');
+                        // Permission denied
+                        if (isIOS) {
+                            message = 'Location access denied.\n\nTo enable:\n1. Open iPhone Settings\n2. Scroll to Safari\n3. Tap "Location"\n4. Select "Allow"\n5. Return here and try again';
+                        } else if (isAndroid) {
+                            message = 'Location access denied.\n\nTo enable:\n1. Tap the lock icon in the address bar\n2. Tap "Permissions"\n3. Enable "Location"\n4. Try again';
+                        } else {
+                            message = 'Location access denied.\n\nTo enable:\n1. Click the lock icon in the address bar\n2. Set "Location" to "Allow"\n3. Refresh and try again';
+                        }
                     } else if (error.code === 2) {
-                        alert('Could not determine your location. Please check your device settings.');
+                        message = 'Could not determine your location. Please make sure location services are enabled on your device.';
                     } else {
-                        alert('Location request timed out. Please try again.');
+                        message = 'Location request timed out. Please try again.';
                     }
 
+                    alert(message);
                     sortSelect.value = 'name';
                     if (callback) callback(false);
                 },
-                { enableHighAccuracy: true, timeout: 10000 }
+                { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
             );
         }
 
